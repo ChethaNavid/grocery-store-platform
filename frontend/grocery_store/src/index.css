@@ -14,3 +14,18 @@
         overflow-x: hidden;
     }
 }
+
+@layer components {
+    .input-box {
+        @apply w-full text-sm bg-transparent border-[1.5px] px-5 py-3 rounded mb-4 outline-none;
+    }
+    .primary-btn { 
+        @apply px-[12px] py-[8px] bg-primary text-white outline-none border-0 rounded-lg cursor-pointer hover:bg-secondary;
+    }
+    .auth-btn {
+        @apply w-full text-sm bg-primary text-white p-2 rounded my-1 hover:bg-secondary;
+    }
+    .icon-btn {
+        @apply text-xl text-slate-300 cursor-pointer hover:text-primary;
+    }
+}
