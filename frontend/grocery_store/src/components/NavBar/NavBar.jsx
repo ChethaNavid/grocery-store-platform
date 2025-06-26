@@ -1,8 +1,23 @@
-import React from 'react'
+import React, { useState } from 'react'
 import SearchBar from './SearchBar'
 import Auth from './Auth'
+import { useNavigate } from 'react-router-dom';
 
-const NavBar = () => {
+const NavBar = ({ onLogout, isLoggedIn, onSearchNote, handleClearSearch }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const navigate = useNavigate();
+
+  const handleSearch = () => {
+    if(searchQuery) {
+      onSearchNote(searchQuery);
+    }
+  }
+
+  const onClearSearch = () => {
+    setSearchQuery("");
+    handleClearSearch();
+  }
   return (
     <div className='flex justify-between items-center bg-white w-full px-10 py-2.5 fixed z-100 top-0 left-0'>
         <div className='flex items-center gap-4'>
@@ -13,9 +28,16 @@ const NavBar = () => {
             </div>
         </div>
 
-        <SearchBar />
+        <SearchBar 
+          value={searchQuery}
+          onChange={(target) => {
+            setSearchQuery(target.value);
+          }}
+          handleSearch={handleSearch}
+          onClearSearch={onClearSearch}
+        />
 
-        <Auth />
+        <Auth isLoggedIn={isLoggedIn} onLogout={onLogout}/>
     </div>
   )
 }
