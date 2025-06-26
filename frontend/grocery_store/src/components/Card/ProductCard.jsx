@@ -1,7 +1,7 @@
 import React from 'react'
 import Categories from '../Categories/CategoryPage'
 
-const ProductCard = ({ imgURL, category, productName, price }) => {
+const ProductCard = ({ imgURL, category, productName, price, handleAddButton }) => {
   return (
     <div className='overflow-x-auto whitespace-nowrap scroll-smooth pb-4 mr-4'>
         <div className='inline-block w-[280px] border border-[#ccc] rounded-lg ml-4 overflow-hidden align-top transition-all duration-300 ease-in-out hover:shadow-[0_20px_25px_rgba(0,0,0,0.15)]'>
@@ -13,7 +13,7 @@ const ProductCard = ({ imgURL, category, productName, price }) => {
                 <p className='text-sm font-semibold ml-4'>{productName || "Fresh Bread Loaf"}</p>
                 <div className='flex justify-between items-center mx-4 my-2.5'>
                     <p className='text-sm'>{price || "$2.79"}</p>
-                    <button className='primary-btn text-sm'>Add</button>
+                    <button className='primary-btn text-sm' onClick={handleAddButton}>Add</button>
                 </div>
             </div>
         </div>
