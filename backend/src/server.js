@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { sequelize } from '../models/index.js';
 import dotenv from 'dotenv';
+import productRouter from '../routes/productRouter.js';
 dotenv.config();
 
 const app = express();
@@ -17,6 +18,8 @@ try {
 } catch (error) {
   console.error('Unable to connect to the database:', error);
 }
+
+app.use('/', productRouter);
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on http://localhost:${process.env.PORT}`);
