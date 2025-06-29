@@ -58,10 +58,26 @@ User.hasMany(Order, {
 });
 
 // Associations
+Order.hasOne(OrderDetail, {
+  foreignKey: {
+    name: 'orderId',
+    allowNull: false
+  },
+  onDelete: 'CASCADE'
+});
+
 OrderDetail.belongsTo(Order, {
   foreignKey: {
     name: 'orderId',
     allowNull: false,
+  },
+  onDelete: 'CASCADE',
+});
+
+Product.hasMany(OrderDetail, {
+  foreignKey: {
+    name: 'productId',
+    allowNull: false
   },
   onDelete: 'CASCADE',
 });
