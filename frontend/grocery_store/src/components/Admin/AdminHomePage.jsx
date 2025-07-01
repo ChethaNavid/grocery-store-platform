@@ -1,6 +1,6 @@
 import React from 'react'
 import NavBarAdmin from '../../components/Admin/NavBarAdmin'
-import ProductCardAdmin from '../../components/Admin/ProductCardAdmin'
+import ProductListAdmin from '../../components/Admin/ProductListAdmin'
 import CategoriesNavbarAdmin from '../../components/Admin/CategoriesNavBarAdmin'
 
 const AdminHome = () => {
@@ -8,7 +8,8 @@ const AdminHome = () => {
     <div className='pt-[120px] overflow-y-hidden'>
       <NavBarAdmin />
       <CategoriesNavbarAdmin />
-      <ProductCardAdmin />
+      <h1 className="text-2xl font-bold my-6">Admin Product Management</h1>
+      <ProductListAdmin />
     </div>
   )
 }

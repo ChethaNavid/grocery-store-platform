@@ -20,8 +20,12 @@ insert into categories (`name`) value
 ('Diary'), 
 ('Frozen'), 
 ('Meat'), 
+<<<<<<< Updated upstream
 ('Snacks');
 
 SET FOREIGN_KEY_CHECKS = 0;
 DELETE FROM products;
 SET FOREIGN_KEY_CHECKS = 1;
+=======
+('Snacks');
+>>>>>>> Stashed changes

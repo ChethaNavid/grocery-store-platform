@@ -7,7 +7,7 @@ const CategoriesNavbar = () => {
   const handleChange = (e) => {
     const selectedCategory = e.target.value;
     if (selectedCategory) {
-      navigate(`/category/${selectedCategory}`);
+      navigate(`/${selectedCategory}`);
     }
   };
   
@@ -20,14 +20,14 @@ const CategoriesNavbar = () => {
         <p className="text-lg text-gray-800 ">Category: </p>
         <select onChange={handleChange} className="text-lg font-semibold border border-[#ccc] bg-[#D9D9D9] rounded-lg p-2 w-full max-w-xs px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 bg-white" defaultValue="">
         <option value="" disabled>All Category</option>
-        <option value="fruit">Fruit</option>
-        <option value="vegetables">Vegetables</option>
-        <option value="diary">Diary</option>
-        <option value="meat">Meat</option>
-        <option value="bakery">Bakery</option>
-        <option value="beverages">Beverages</option>
-        <option value="snacks">Snacks</option>
-        <option value="frozen">Frozen</option>
+        <option value="admin/Fruit">Fruit</option>
+        <option value="admin/Vegetables">Vegetables</option>
+        <option value="admin/Diary">Diary</option>
+        <option value="admin/Meat">Meat</option>
+        <option value="admin/Bakery">Bakery</option>
+        <option value="admin/Beverages">Beverages</option>
+        <option value="admin/Snacks">Snacks</option>
+        <option value="admin/Frozen">Frozen</option>
     </select>
       </div>
       
