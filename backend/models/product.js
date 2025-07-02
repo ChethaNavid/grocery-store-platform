@@ -22,7 +22,7 @@ export const Product = sequelize.define("Product", {
         type: DataTypes.TEXT,
         allowNull: false
     },
-    imgURL: {
+    imageName: {
         type: DataTypes.STRING,
         allowNull: false
     }
