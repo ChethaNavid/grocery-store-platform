@@ -29,3 +29,11 @@
         @apply text-xl text-slate-300 cursor-pointer hover:text-primary;
     }
 }
+
+html {
+  scrollbar-width: none; /* Firefox */
+}
+
+html::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
