@@ -3,7 +3,9 @@ import cors from 'cors';
 import { sequelize } from '../models/index.js';
 import dotenv from 'dotenv';
 import productRouter from '../routes/productRouter.js';
+import categoryRouterAdmin from '../routes/categoryRouter.js';
 dotenv.config();
+
 
 const app = express();
 app.use(express.json());
@@ -20,6 +22,7 @@ try {
 }
 
 app.use('/', productRouter);
+app.use('/admin', categoryRouterAdmin);
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on http://localhost:${process.env.PORT}`);
