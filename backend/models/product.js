@@ -13,6 +13,7 @@ export const Product = sequelize.define("Product", {
     },
     inStock: {
         type: DataTypes.BOOLEAN,
+        defaultValue: true
     },
     price: {
         type: DataTypes.FLOAT,
