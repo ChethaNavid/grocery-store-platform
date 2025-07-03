@@ -97,4 +97,64 @@ const getPopularProduct = async (req, res) => {
     }
 }
 
-export {getAllProduct, getPopularProduct};
+// GET/category/:categoryName
+const getProductFromCategory = async (req, res) => {
+
+  const { categoryName } = req.params;
+
+  try {
+    const category = await Category.findOne({
+        where: { name : categoryName }
+    });
+
+    if(!category) {
+        return res.status(404).json({ error: true, message: "Category Not Found" });
+    }
+    const products = await Product.findAll({
+        where: { categoryId: category.id },
+        include: {
+            model: Category,
+            attributes: ['name'],
+        },
+    });
+
+    // Build signed URLs for each product
+    const enrichedProducts = await Promise.all(products.map(async (product) => {
+      const productData = product.toJSON();
+
+      if (productData.imageName) {
+        try {
+          const command = new GetObjectCommand({
+            Bucket: bucketName,
+            Key: productData.imageName,
+          });
+
+          const signedUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
+
+          return {
+            ...productData,
+            imageUrl: signedUrl,
+          };
+        } catch (err) {
+          console.error(`Error generating signed URL for ${productData.imageName}`, err);
+          return {
+            ...productData,
+            imageUrl: null,
+          };
+        }
+      } 
+    }));
+
+    return res.status(200).json({
+      error: false,
+      products: enrichedProducts,
+      message: "Products fetched successfully."
+    });
+
+  } catch (error) {
+    console.error("Internal Server Error:", error);
+    return res.status(500).json({ error: true, message: "Internal Server Error" });
+  }
+};
+
+export {getAllProduct, getPopularProduct, getProductFromCategory};
