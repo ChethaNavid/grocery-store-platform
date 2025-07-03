@@ -3,7 +3,7 @@ import cors from 'cors';
 import { sequelize } from '../models/index.js';
 import dotenv from 'dotenv';
 import productRouter from '../routes/productRouter.js';
-import categoryRouterAdmin from '../routes/categoryRouter.js';
+import adminRouter from '../routes/adminRouter.js';
 dotenv.config();
 
 
@@ -15,14 +15,14 @@ app.use(cors({
 }))
 
 try {
-  const result = await sequelize.sync({ alter: true });
+  const result = await sequelize.sync()
   console.log(result);
 } catch (error) {
   console.error('Unable to connect to the database:', error);
 }
 
 app.use('/', productRouter);
-app.use('/admin', categoryRouterAdmin);
+app.use('/admin', adminRouter);
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on http://localhost:${process.env.PORT}`);
