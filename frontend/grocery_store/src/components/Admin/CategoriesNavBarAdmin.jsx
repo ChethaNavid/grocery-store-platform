@@ -1,38 +1,51 @@
-import React from 'react'
-import SearchBarAdmin from '../Admin/SearchBarAdmin'
-import { useNavigate } from "react-router-dom"
+import React, { useMemo } from 'react';
+import SearchBarAdmin from '../Admin/SearchBarAdmin';
+import { useNavigate, useLocation } from "react-router-dom";
 
 const CategoriesNavbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const selectedValue = useMemo(() => {
+    const path = location.pathname;
+    if (path === "/admin") return "admin";
+    return path.replace("/", "");
+  }, [location.pathname]);
+
   const handleChange = (e) => {
     const selectedCategory = e.target.value;
-    if (selectedCategory) {
+    if (selectedCategory === 'admin') {
+      navigate('/admin');
+    } else {
       navigate(`/${selectedCategory}`);
     }
   };
-  
+
   return (
-    <nav className="fixed top-[69px] w-full left-0 z-99 text-sm text-slate-600 border border-[#ccc] flex justify-between gap-[10px] bg-[#F9FAFB] px-2.5 py-3.5">
+    <nav className="fixed top-[69px] w-full left-0 z-40 text-sm text-slate-600 flex justify-between gap-[10px] bg-white px-2.5 py-3.5">
       <div className="w-full max-w-2xl mx-5">
         <SearchBarAdmin />
       </div>
       <div className="flex items-center pr-10 gap-4">
-        <p className="text-lg text-gray-800 ">Category: </p>
-        <select onChange={handleChange} className="text-lg font-semibold border border-[#ccc] bg-[#D9D9D9] rounded-lg p-2 w-full max-w-xs px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 bg-white" defaultValue="">
-        <option value="" disabled>All Category</option>
-        <option value="admin/Fruit">Fruit</option>
-        <option value="admin/Vegetables">Vegetables</option>
-        <option value="admin/Diary">Diary</option>
-        <option value="admin/Meat">Meat</option>
-        <option value="admin/Bakery">Bakery</option>
-        <option value="admin/Beverages">Beverages</option>
-        <option value="admin/Snacks">Snacks</option>
-        <option value="admin/Frozen">Frozen</option>
-    </select>
+        <p className="text-sm text-gray-800 ">Category: </p>
+        <select
+          onChange={handleChange}
+          value={selectedValue}
+          className="text-sm font-semibold border bg-[#D9D9D9] rounded-lg p-2 w-full max-w-xs px-4 py-2 border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+        >
+          <option value="admin">All Category</option>
+          <option value="admin/fruits">Fruit</option>
+          <option value="admin/vegetables">Vegetables</option>
+          <option value="admin/dairy">Dairy</option>
+          <option value="admin/meat">Meat</option>
+          <option value="admin/bakery">Bakery</option>
+          <option value="admin/beverages">Beverages</option>
+          <option value="admin/snacks">Snacks</option>
+          <option value="admin/frozen">Frozen</option>
+        </select>
       </div>
-      
     </nav>
-  )
-}
+  );
+};
 
-export default CategoriesNavbar
+export default CategoriesNavbar;
