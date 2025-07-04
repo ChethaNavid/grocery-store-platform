@@ -6,15 +6,27 @@ import FooterCard from '../../components/Card/FooterCard'
 import CategoriesNavbar from '../../components/NavBar/CategoriesNavbar'
 import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../../utils/axiosInstance'
+import AddToCartModal from './AddToCartModal'
 
 const Home = () => {
   const navigate = useNavigate();
+
   const [imgURL, setImgURL] = useState("");
   const [category, setCategory] = useState("");
   const [productName, setproductName] = useState("");
   const [price, setPrice] = useState(0);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const [showToastMsg, setShowToastMsg] = useState({
+      isShown: false,
+      type:"add",
+      message: "",
+  });
+
   const [allProduct, setAllProduct] = useState([]);
+  const [popularProduct, setPopularProduct] = useState([]);
   const [userInfo, setUserInfo] = useState(null);
   const [isLoggedIn, setisLoggedIn] = useState(false);
   const [isSearch, setIsSearch] = useState(false);
@@ -27,25 +39,50 @@ const Home = () => {
   }
 
   // Get All Products
-    const getAllProduct = async () => {
+  const getAllProduct = async () => {
+      try {
+          const response = await axiosInstance.get("/product");
+          if(response.data && response.data.products) {
+              setAllProduct(response.data.products);
+          }
+      } catch (error) {
+          console.log("Unexpected error occurred.");
+      }
+  }
+
+    // Get Popular Products
+    const getPopularProduct = async () => {
         try {
-            const response = await axiosInstance.get("/product");
+            const response = await axiosInstance.get("/popular-product");
             if(response.data && response.data.products) {
-                setAllProduct(response.data.products);
+                setPopularProduct(response.data.products);
             }
         } catch (error) {
             console.log("Unexpected error occurred.");
         }
     }
 
-  const handleAddButton = () => {
-
+  const handleAddButton = (product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
   }
 
-    useEffect(() => {
-      getAllProduct();
-      return () => {}
-    }, [])
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setSelectedProduct(null)
+  }
+
+  const confirmAddToCart = (quantity) => {
+    // TODO: dispatch to your cart/store:
+    // cart.add(selectedProduct, quantity)
+    closeModal()
+  }
+
+  useEffect(() => {
+    getAllProduct();
+    getPopularProduct();
+    return () => {}
+  }, [])
 
   return (
     <div className='pt-[120px]'>
@@ -66,7 +103,7 @@ const Home = () => {
                 category={items.Category?.name}
                 productName={items.name}
                 price={`$${items.price}`}
-                handleAddButton={() => {handleAddButton(items)}}
+                handleAddButton={() => handleAddButton(items)}
               />
             )
           })}
@@ -77,7 +114,7 @@ const Home = () => {
 
       <div className='overflow-x-auto scrollbar-hide scroll-smooth pb-4 mr-4'>
         <div className='flex gap-6 ml-4'>
-          {allProduct.map((items) => {
+          {popularProduct.map((items) => {
             return (
               <ProductCard 
                 imgURL={items.imageUrl}
@@ -92,6 +129,17 @@ const Home = () => {
       </div>
 
       <FooterCard />
+
+      {isModalOpen && selectedProduct && (
+        <AddToCartModal
+          product={{
+            ...selectedProduct,
+            category: selectedProduct.Category?.name
+          }}
+          onClose={closeModal}
+          onAdd={confirmAddToCart}
+        />
+      )}
 
     </div>
   )

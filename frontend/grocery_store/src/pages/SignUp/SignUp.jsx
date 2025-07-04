@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import PasswordInput from '../../components/Input/PasswordInput';
+import { validateEmail } from '../../utils/validateEmail';
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
@@ -29,6 +30,32 @@ const SignUp = () => {
     setError("");
 
     // Sign Up API Call
+    try {
+        const response = await axiosInstance.post("/users/create-account", {
+            name: username,
+            email: email,
+            phoneNum: phoneNum,
+            password: password,
+        });
+
+        // Handle Successful Sign Up
+        if(response.data && response.data.error) {
+            setError(response.data.message);
+            return;
+        }
+
+        if(response.data && response.data.token) {
+            localStorage.setItem("token", response.data.token);
+            navigate("/");
+        }
+        
+    } catch (error) {
+        if(error.response && error.response.data && error.response.data.message) {
+            setError(error.response.data.message);
+        } else {
+            setError("Unexpected error occurred. Please try again");
+        }
+    }
   }
 
   return (

@@ -4,7 +4,6 @@ import AdminHome from './components/Admin/AdminHomePage';
 import Login from './pages/Login/Login';
 import SignUp from './pages/SignUp/SignUp';
 import CategoryPage from "./components/Categories/CategoryPage";
-import CategoryPageAdmin from "./components/Admin/CategoryPageAdmin";
 
 function App() {
 
@@ -13,7 +12,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/admin" element={<AdminHome />} />
-        <Route path="/admin/:categoryName" element={<CategoryPageAdmin />} />
+        <Route path="/admin/:categoryName" element={<AdminHome />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/category/:categoryName" element={<CategoryPage />} />
