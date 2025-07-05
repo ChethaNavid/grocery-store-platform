@@ -18,7 +18,7 @@ const s3 = new S3Client({
 })
 
 // GET /product
-const getAllProduct = async (req, res) => {
+const getFeatureProduct = async (req, res) => {
   try {
     const products = await Product.findAll({
       include: {
@@ -41,20 +41,20 @@ const getAllProduct = async (req, res) => {
         try {
           const command = new GetObjectCommand({
             Bucket: bucketName,
-            Key: productData.imageName, // assume imgURL is the object key like "bananas.jpg"
+            Key: productData.imageName, 
           });
 
           const signedUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
 
           return {
             ...productData,
-            imageUrl: signedUrl, // replace or supplement with signed URL
+            imageUrl: signedUrl, 
           };
         } catch (err) {
           console.error(`Error generating signed URL for ${productData.imageName}`, err);
           return {
             ...productData,
-            imageUrl: null, // fallback
+            imageUrl: null, 
           };
         }
       } 
@@ -72,25 +72,53 @@ const getAllProduct = async (req, res) => {
   }
 };
 
-
 // GET/popular-product
 const getPopularProduct = async (req, res) => {
     try {
-        const product = await Product.findAll({
-            attributes: [
-                'id',
-                'name',
-                [sequelize.fn('SUM', sequelize.col('OrderDetails.quantity')), 'totalOrdered']
-            ],
-            include: [{
-                model: OrderDetail,
-                attributes: []
-            }],
-            group: ['Product.id'],
-            order: [[sequelize.literal('totalOrdered'), 'DESC']],
-            subQuery: false
-        })
-        return res.status(200).json({ error: false, product, message: "Product fetch successfully."})
+      const products = await Product.findAll({
+        attributes: {
+          include: [
+            [sequelize.fn('SUM', sequelize.col('OrderDetails.quantity')), 'totalOrdered']
+          ]
+        },
+        include: [{
+            model: OrderDetail,
+            attributes: []
+        }],
+        group: ['Product.id'],
+        order: [[sequelize.literal('totalOrdered'), 'DESC']],
+        limit: 20,
+        subQuery: false
+      })
+
+      const enrichedProducts = await Promise.all(products.map(async (product) => {
+        const productData = product.toJSON();
+
+        if (productData.imageName) {
+          try {
+            const command = new GetObjectCommand({
+              Bucket: bucketName,
+              Key: productData.imageName,
+            });
+
+            const signedUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
+
+            return {
+              ...productData,
+              imageUrl: signedUrl,
+            };
+          } catch (err) {
+            console.error(`Error generating signed URL for ${productData.imageName}`, err);
+          }
+        }
+
+        return {
+          ...productData,
+          imageUrl: null,
+        };
+      }));
+
+      return res.status(200).json({ error: false, products: enrichedProducts, message: "Product fetch successfully."})
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: true, message: "Internal Server Error" });
@@ -157,4 +185,4 @@ const getProductFromCategory = async (req, res) => {
   }
 };
 
-export {getAllProduct, getPopularProduct, getProductFromCategory};
+export {getFeatureProduct, getPopularProduct, getProductFromCategory};
