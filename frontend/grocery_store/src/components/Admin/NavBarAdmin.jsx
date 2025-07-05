@@ -1,6 +1,6 @@
 import React from 'react';
 
-const NavBarAdmin = () => {
+const NavBarAdmin = ({ handleAddProduct }) => {
   return (
     <div className='flex justify-between items-center bg-white w-full px-10 py-2.5 fixed z-50 top-0 left-0 border-b-2'>
       <div className='flex items-center gap-4'>
@@ -11,7 +11,7 @@ const NavBarAdmin = () => {
         </div>
       </div>
       <div>
-        <button className='primary-btn text-sm'>Add Product</button>
+        <button className='primary-btn text-sm' onClick={handleAddProduct}>Add Product</button>
       </div>
     </div>
   );

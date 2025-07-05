@@ -2,15 +2,25 @@ import React from 'react'
 import { useParams } from 'react-router-dom'
 import { useState, useEffect } from 'react';
 import NavBar from '../../components/NavBar/NavBar'
-import AdsCard from '../../components/Card/AdsCard'
 import ProductCard from '../../components/Card/ProductCard'
 import FooterCard from '../../components/Card/FooterCard'
 import CategoriesNavbar from '../../components/NavBar/CategoriesNavbar'
 import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../../utils/axiosInstance'
+import AddToCartModal from '../../pages/Home/AddToCartModal';
 
 const CategoryPage = () => {
   const { categoryName } = useParams();
+  const navigate = useNavigate();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const [showToastMsg, setShowToastMsg] = useState({
+      isShown: false,
+      type:"add",
+      message: "",
+  });
 
   const [allProduct, setAllProduct] = useState([]);
   const [isLoggedIn, setisLoggedIn] = useState(false);
@@ -33,8 +43,20 @@ const CategoryPage = () => {
       }
   }
 
-  const handleAddButton = () => {
+  const handleAddButton = (product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  }
 
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setSelectedProduct(null)
+  }
+
+  const confirmAddToCart = (quantity) => {
+    // TODO: dispatch to your cart/store:
+    // cart.add(selectedProduct, quantity)
+    closeModal()
   }
 
   useEffect(() => {
@@ -54,6 +76,7 @@ const CategoryPage = () => {
         {allProduct.map((items) => {
           return (
             <ProductCard 
+              key={items.id}
               imgURL={items.imageUrl}
               category={items.Category?.name}
               productName={items.name}
@@ -65,6 +88,17 @@ const CategoryPage = () => {
       </div>
 
       <FooterCard />
+
+      {isModalOpen && selectedProduct && (
+        <AddToCartModal
+          product={{
+            ...selectedProduct,
+            category: selectedProduct.Category?.name
+          }}
+          onClose={closeModal}
+          onAdd={confirmAddToCart}
+        />
+      )}
 
     </div>
   )
