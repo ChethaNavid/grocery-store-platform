@@ -39,27 +39,27 @@ const Home = () => {
   }
 
   // Get All Products
-  const getAllProduct = async () => {
-      try {
-          const response = await axiosInstance.get("/product");
-          if(response.data && response.data.products) {
-              setAllProduct(response.data.products);
-          }
-      } catch (error) {
-          console.log("Unexpected error occurred.");
-      }
+  const getFeatureProduct = async () => {
+    try {
+        const response = await axiosInstance.get("/product");
+        if(response.data && response.data.products) {
+            setAllProduct(response.data.products);
+        }
+    } catch (error) {
+        console.log("Unexpected error occurred.");
+    }
   }
 
     // Get Popular Products
     const getPopularProduct = async () => {
-        try {
-            const response = await axiosInstance.get("/popular-product");
-            if(response.data && response.data.products) {
-                setPopularProduct(response.data.products);
-            }
-        } catch (error) {
-            console.log("Unexpected error occurred.");
-        }
+      try {
+          const response = await axiosInstance.get("/popular-product");
+          if(response.data && response.data.products) {
+              setPopularProduct(response.data.products);
+          }
+      } catch (error) {
+          console.log("Unexpected error occurred.");
+      }
     }
 
   const handleAddButton = (product) => {
@@ -79,7 +79,7 @@ const Home = () => {
   }
 
   useEffect(() => {
-    getAllProduct();
+    getFeatureProduct();
     getPopularProduct();
     return () => {}
   }, [])
