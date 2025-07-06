@@ -2,6 +2,7 @@ import { Product, OrderDetail, sequelize, Category } from "../models/index.js";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import dotenv from 'dotenv'
+import { Op, where, col } from "sequelize";
 dotenv.config();
  
 const bucketName = process.env.BUCKET_NAME;
@@ -185,4 +186,64 @@ const getProductFromCategory = async (req, res) => {
   }
 };
 
-export {getFeatureProduct, getPopularProduct, getProductFromCategory};
+// GET /search-product
+const searchProduct = async (req, res) => {
+
+  const {query} = req.query;
+
+  if(!query) {
+      return res.status(400).json({ error: true, message: "Query is required!" });
+  }
+
+  try {
+    const matchingProducts = await Product.findAll({
+      include: {
+        model: Category,
+        attributes: ['name']
+      },
+      where: {
+        [Op.or]: [
+          { name: { [Op.like]: `%${query}%` } }, // match product name
+          where(col('Category.name'), { [Op.like]: `%${query}%` }) // match category name
+        ]
+      }
+    });
+
+    const enrichedProducts = await Promise.all(matchingProducts.map(async (product) => {
+      const productData = product.toJSON();
+
+      if (productData.imageName) {
+        try {
+          const command = new GetObjectCommand({
+            Bucket: bucketName,
+            Key: productData.imageName,
+          });
+
+          const signedUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
+
+          return {
+            ...productData,
+            imageUrl: signedUrl,
+          };
+        } catch (err) {
+          console.error(`Error generating signed URL for ${productData.imageName}`, err);
+          return {
+            ...productData,
+            imageUrl: null,
+          };
+        }
+      } 
+    }));
+
+    return res.status(200).json({
+        error: false,
+        products: enrichedProducts,
+        message: "Products matching the search query retrieved successfully"
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: true, message: "Internal Server Error" });
+  }
+}
+
+export {getFeatureProduct, getPopularProduct, getProductFromCategory, searchProduct};

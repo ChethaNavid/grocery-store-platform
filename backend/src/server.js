@@ -4,6 +4,9 @@ import { sequelize } from '../models/index.js';
 import dotenv from 'dotenv';
 import productRouter from '../routes/productRouter.js';
 import adminRouter from '../routes/adminRouter.js';
+import { authorizeRole } from '../middleware/authorizeRole.js';
+import userRouter from '../routes/user.route.js';
+import authenticateToken from '../middleware/auth.js';
 dotenv.config();
 
 
@@ -22,7 +25,8 @@ try {
 }
 
 app.use('/', productRouter);
-app.use('/admin', adminRouter);
+app.use('/admin', authenticateToken, authorizeRole('admin'), adminRouter);
+app.use('/', userRouter);
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on http://localhost:${process.env.PORT}`);
