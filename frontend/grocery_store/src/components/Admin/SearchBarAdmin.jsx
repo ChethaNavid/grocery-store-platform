@@ -13,7 +13,7 @@ const SearchBarAdmin = ({ value, onChange, handleSearch, onClearSearch }) => {
       onSubmit={onSubmit}
       className="w-3/4 border flex items-center gap-2.5 border-[#ccc] rounded-lg bg-white p-2"
     >
-      <FaMagnifyingGlass className="w-4 h-4 ml-2 text-gray-500" />
+      <FaMagnifyingGlass className="w-4 h-4 ml-2 text-gray-500" onClick={handleSearch}/>
       
       <input
         type="text"

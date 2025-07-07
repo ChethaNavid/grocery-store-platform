@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import SearchBarAdmin from '../Admin/SearchBarAdmin';
 import { useNavigate, useLocation } from "react-router-dom";
 
-const CategoriesNavbar = () => {
+const CategoriesNavbar = ({ onSearch, handleClearSearch }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -21,10 +21,29 @@ const CategoriesNavbar = () => {
     }
   };
 
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = () => {
+    if(searchQuery) {
+      onSearch(searchQuery);
+    }
+  }
+
+  const onClearSearch = () => {
+    setSearchQuery("");
+    handleClearSearch();
+  }
+
   return (
     <nav className="fixed top-[69px] w-full left-0 z-40 text-sm text-slate-600 flex justify-between gap-[10px] bg-white px-2.5 py-3.5">
       <div className="w-full max-w-2xl mx-5">
-        <SearchBarAdmin />
+        <SearchBarAdmin value={searchQuery}
+          onChange={({target}) => {
+            setSearchQuery(target.value);
+          }}
+          handleSearch={handleSearch}
+          onClearSearch={onClearSearch}
+        />
       </div>
       <div className="flex items-center pr-10 gap-4">
         <p className="text-sm text-gray-800 ">Category: </p>

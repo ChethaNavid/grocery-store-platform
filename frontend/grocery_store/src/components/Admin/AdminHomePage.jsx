@@ -6,6 +6,7 @@ import ProductCardAdmin from './ProductCardAdmin';
 import CategoriesNavbarAdmin from '../../components/Admin/CategoriesNavBarAdmin';
 import AddEditProduct from './AddEditProduct';
 import ConfirmModal from './ConfrimModal';
+import ToastMessage from '../ToastMessage/ToastMessage';
 
 const AdminHome = () => {
   const { categoryName } = useParams();
@@ -15,7 +16,29 @@ const AdminHome = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
+  const [isSearch, setIsSearch] = useState(false);
 
+  const [showToastMsg, setShowToastMsg] = useState({
+    isShown: false,
+    type:"add",
+    message: "",
+  });
+
+  const showToastMessage = (message, type) => {
+    setShowToastMsg({
+      isShown: true,
+      message,
+      type,
+    })
+  };
+
+  const handleCloseToast = () => {
+    setShowToastMsg({
+      isShown: false,
+      message: "",
+      type: "",
+    })
+  };
 
   // Fetch products
   const getProduct = async () => {
@@ -31,6 +54,27 @@ const AdminHome = () => {
       console.log("Unexpected error occurred.");
     }
   };
+  
+  // Search Product
+  const searchProduct = async (query) => {
+    try {
+      const response = await axiosInstance.get('/search-product', {
+        params: { query }
+      });
+      if (response.data && response.data.products) {
+        setAllProduct(response.data.products);
+        setIsSearch(true);
+      }
+    } catch (error) {
+      console.log("Search failed", error);
+    }
+  };
+
+  // Clear Search
+  const handleClearSearch = () => {
+      setIsSearch(false);
+      getProduct();
+  }
 
   // Open Add Modal
   const handleAddProduct = () => {
@@ -53,10 +97,12 @@ const AdminHome = () => {
         await axiosInstance.post('/admin/add-product', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
+        showToastMessage("Product Added Successfully", "success");
       } else if (modalMode === 'edit' && selectedProduct?.id) {
         await axiosInstance.put(`/admin/edit-product/${selectedProduct.id}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
+        showToastMessage("Product Updated Successfully", "success");
       }
 
       setShowModal(false);
@@ -70,6 +116,7 @@ const AdminHome = () => {
   const handleDelete = async (data) => {
     try {
       await axiosInstance.delete(`/admin/delete-product/${data.id}`);
+      showToastMessage("Product Deleted Successfully", "delete");
       getProduct();
     } catch (error) {
       console.error(error);
@@ -83,7 +130,7 @@ const AdminHome = () => {
   return (
     <div className="pt-[150px]">
       <NavBarAdmin handleAddProduct={handleAddProduct} />
-      <CategoriesNavbarAdmin />
+      <CategoriesNavbarAdmin onSearch={searchProduct} handleClearSearch={handleClearSearch}/>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 px-5 pb-8">
         {allProduct.map((item) => (
@@ -127,6 +174,13 @@ const AdminHome = () => {
           }}
         />
       )}
+
+      <ToastMessage 
+        isShown={showToastMsg.isShown}
+        type={showToastMsg.type}
+        message={showToastMsg.message}
+        onClose={handleCloseToast}
+      />
 
     </div>
   );
