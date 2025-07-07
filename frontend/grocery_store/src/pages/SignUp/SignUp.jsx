@@ -2,12 +2,13 @@ import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import PasswordInput from '../../components/Input/PasswordInput';
 import { validateEmail } from '../../utils/validateEmail';
+import axiosInstance from '../../utils/axiosInstance'
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [phoneNum, setPhoneNum] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -23,6 +24,11 @@ const SignUp = () => {
         return;
     }
 
+    if(!phoneNumber) {
+        setError("Please enter your phone number.");
+        return;
+    }
+
     if(!password) {
         setError("Please enter the password");
         return;
@@ -31,10 +37,10 @@ const SignUp = () => {
 
     // Sign Up API Call
     try {
-        const response = await axiosInstance.post("/users/create-account", {
-            name: username,
+        const response = await axiosInstance.post("/create-account", {
+            username: username,
             email: email,
-            phoneNum: phoneNum,
+            phoneNumber: phoneNumber,
             password: password,
         });
 
@@ -60,9 +66,9 @@ const SignUp = () => {
 
   return (
     <>
-      <div className='flex justify-center items-center mt-20'>
+      <div className='flex justify-center items-center min-h-screen'>
           <div className='w-96 border rounded bg-white px-7 py-10'>
-              <form onSubmit={() => {}}>
+              <form onSubmit={handleSignUp}>
                   <h4 className='text-2xl mb-7'>Sign Up</h4>
                   <input 
                       className='input-box' 
@@ -82,8 +88,8 @@ const SignUp = () => {
                       type='text' 
                       placeholder='Phone Number' 
                       className='input-box'
-                      value={phoneNum}
-                      onChange={(e) => setPhoneNum(e.target.value)}
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
                   />
                   <PasswordInput 
                       value={password}
