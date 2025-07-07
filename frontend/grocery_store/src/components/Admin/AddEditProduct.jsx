@@ -98,7 +98,7 @@ const AddEditProduct = ({ mode = 'add', product = {}, onClose, onSubmit }) => {
               <option value="Dairy">Dairy</option>
               <option value="Meat">Meat</option>
               <option value="Bakery">Bakery</option>
-              <option value="Baverages">Baverages</option>
+              <option value="Beverages">Beverages</option>
               <option value="Snacks">Snacks</option>
             </select>
           </div>
