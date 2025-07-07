@@ -29,8 +29,6 @@ const Home = () => {
   const [popularProduct, setPopularProduct] = useState([]);
   const [userInfo, setUserInfo] = useState(null);
   const [isLoggedIn, setisLoggedIn] = useState(false);
-  const [isSearch, setIsSearch] = useState(false);
-
   
   const onLogout = () => {
     localStorage.clear();
@@ -38,29 +36,45 @@ const Home = () => {
     setisLoggedIn(false);
   }
 
-  // Get All Products
-  const getFeatureProduct = async () => {
+  //Get User Info
+  const getUserInfo = async () => {
     try {
-        const response = await axiosInstance.get("/product");
-        if(response.data && response.data.products) {
-            setAllProduct(response.data.products);
-        }
-    } catch (error) {
-        console.log("Unexpected error occurred.");
+      const response = await axiosInstance.get("/get-user");
+      if(response.data && response.data.user) {
+          setUserInfo(response.data.user);
+          setisLoggedIn(true);
+      }
+    } catch(error) {
+      if(error.response.status === 401) {
+          localStorage.clear();
+          navigate("/login");
+      }
     }
   }
 
-    // Get Popular Products
-    const getPopularProduct = async () => {
-      try {
-          const response = await axiosInstance.get("/popular-product");
-          if(response.data && response.data.products) {
-              setPopularProduct(response.data.products);
-          }
-      } catch (error) {
-          console.log("Unexpected error occurred.");
+  // Get All Products
+  const getFeatureProduct = async () => {
+    try {
+      const response = await axiosInstance.get("/product");
+      if(response.data && response.data.products) {
+          setAllProduct(response.data.products);
       }
+    } catch (error) {
+      console.log("Unexpected error occurred.");
     }
+  }
+
+  // Get Popular Products
+  const getPopularProduct = async () => {
+    try {
+      const response = await axiosInstance.get("/popular-product");
+      if(response.data && response.data.products) {
+          setPopularProduct(response.data.products);
+      }
+    } catch (error) {
+      console.log("Unexpected error occurred.");
+    }
+  }
 
   const handleAddButton = (product) => {
     setSelectedProduct(product);
@@ -79,6 +93,7 @@ const Home = () => {
   }
 
   useEffect(() => {
+    getUserInfo();
     getFeatureProduct();
     getPopularProduct();
     return () => {}
@@ -86,7 +101,7 @@ const Home = () => {
 
   return (
     <div className='pt-[120px]'>
-      <NavBar isLoggedIn={isLoggedIn} onLogout={onLogout} onSearchNote={() => {}} handleClearSearch={() => {}} />
+      <NavBar isLoggedIn={userInfo} onLogout={onLogout} />
 
       <CategoriesNavbar />
 
@@ -99,6 +114,7 @@ const Home = () => {
           {allProduct.map((items) => {
             return (
               <ProductCard 
+                key={items.id}
                 imgURL={items.imageUrl}
                 category={items.Category?.name}
                 productName={items.name}
