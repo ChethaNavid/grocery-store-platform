@@ -23,12 +23,12 @@ const CategoryPage = () => {
   });
 
   const [allProduct, setAllProduct] = useState([]);
-  const [isLoggedIn, setisLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const onLogout = () => {
     localStorage.clear();
     navigate('/login');
-    setisLoggedIn(false);
+    setIsLoggedIn(false);
   }
 
   // Get All Products
@@ -66,7 +66,7 @@ const CategoryPage = () => {
 
   return (
     <div className='pt-[120px]'>
-      <NavBar isLoggedIn={isLoggedIn} onLogout={onLogout} onSearchNote={() => {}} handleClearSearch={() => {}} />
+      <NavBar isLoggedIn={isLoggedIn} onLogout={onLogout} />
 
       <CategoriesNavbar />
 
