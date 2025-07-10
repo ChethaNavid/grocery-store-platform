@@ -1,17 +1,20 @@
 import { React, useState} from 'react'
 import { useNavigate, Link } from 'react-router-dom';
 import PasswordInput from '../../components/Input/PasswordInput';
+import { validateEmail } from '../../utils/validateEmail';
+import axiosInstance from '../../utils/axiosInstance';
+import { jwtDecode } from 'jwt-decode';
 
 const Login = () => {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if(!validateEmail(email)) {
-        setError("Please enter a valid email address.");
+    if(!identifier) {
+        setError("Please enter a valid email address or phone number.");
         return;
     }
 
@@ -21,21 +24,48 @@ const Login = () => {
     }
     setError("");
 
+    const isEmail = validateEmail(identifier);
+    const loginData = isEmail
+    ? { email: identifier, password } 
+    : { phoneNumber: identifier, password }
+
     // Login API call
+    try {
+        const response = await axiosInstance.post("/login", loginData);
+
+        if(response.data && response.data.token) {
+            const token = response.data.token;
+            localStorage.setItem("token", response.data.token)
+
+            const decoded = jwtDecode(token);
+            if(decoded.role === "admin") {
+                navigate('/admin');
+            } else {
+                navigate('/')
+            }
+        }
+    } catch (error) {
+        if(error.response && error.response.data && error.response.data.message) {
+            setError(error.response.data.message);
+        } else {
+            console.error(error)
+            setError("An unexpected error occurred. Please try again.")
+        }
+    }
   }
   return (
     <>
-      <div className='flex justify-center items-center mt-20'>
+      <div className='flex justify-center items-center min-h-screen'>
           <div className='w-96 border rounded bg-white px-7 py-10'>
-              <form onSubmit={() => {}}>
+              <form onSubmit={handleLogin}>
                   <h4 className='text-2xl mb-7'>Login</h4>
 
                   <input 
                       type='text' 
-                      placeholder='Email' 
+                      placeholder='Email or Phone Number' 
                       className='input-box'
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
                   />
 
                   <PasswordInput 

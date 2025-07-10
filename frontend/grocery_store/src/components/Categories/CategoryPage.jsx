@@ -1,10 +1,106 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
+import { useState, useEffect } from 'react';
+import NavBar from '../../components/NavBar/NavBar'
+import ProductCard from '../../components/Card/ProductCard'
+import FooterCard from '../../components/Card/FooterCard'
+import CategoriesNavbar from '../../components/NavBar/CategoriesNavbar'
+import { useNavigate } from 'react-router-dom'
+import axiosInstance from '../../utils/axiosInstance'
+import AddToCartModal from '../../pages/Home/AddToCartModal';
 
 const CategoryPage = () => {
   const { categoryName } = useParams();
+  const navigate = useNavigate();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const [showToastMsg, setShowToastMsg] = useState({
+      isShown: false,
+      type:"add",
+      message: "",
+  });
+
+  const [allProduct, setAllProduct] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const onLogout = () => {
+    localStorage.clear();
+    navigate('/login');
+    setIsLoggedIn(false);
+  }
+
+  // Get All Products
+  const getProductFromCategory = async () => {
+      try {
+          const response = await axiosInstance.get(`/category/${categoryName}`);
+          if(response.data && response.data.products) {
+              setAllProduct(response.data.products);
+          }
+      } catch (error) {
+          console.log("Unexpected error occurred.");
+      }
+  }
+
+  const handleAddButton = (product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setSelectedProduct(null)
+  }
+
+  const confirmAddToCart = (quantity) => {
+    // TODO: dispatch to your cart/store:
+    // cart.add(selectedProduct, quantity)
+    closeModal()
+  }
+
+  useEffect(() => {
+    getProductFromCategory();
+    return () => {}
+  }, [categoryName])
+
   return (
-    <div>CategoryPage</div>
+    <div className='pt-[120px]'>
+      <NavBar isLoggedIn={isLoggedIn} onLogout={onLogout} />
+
+      <CategoriesNavbar />
+
+      <p className='m-4 text-xl font-bold'>{categoryName.charAt(0).toUpperCase() + categoryName.slice(1)} Products</p>
+
+      <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 px-4 pb-8'>
+        {allProduct.map((items) => {
+          return (
+            <ProductCard 
+              key={items.id}
+              imgURL={items.imageUrl}
+              category={items.Category?.name}
+              productName={items.name}
+              price={`$${items.price}`}
+              handleAddButton={() => {handleAddButton(items)}}
+            />
+          )
+        })}
+      </div>
+
+      <FooterCard />
+
+      {isModalOpen && selectedProduct && (
+        <AddToCartModal
+          product={{
+            ...selectedProduct,
+            category: selectedProduct.Category?.name
+          }}
+          onClose={closeModal}
+          onAdd={confirmAddToCart}
+        />
+      )}
+
+    </div>
   )
 }
 
