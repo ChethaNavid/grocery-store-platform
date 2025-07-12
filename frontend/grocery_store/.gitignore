@@ -17,8 +17,6 @@ dist-ssr
 !.vscode/extensions.json
 .idea
 .DS_Store
-.AdminUserList.jsx
-.UserCardAdmin.jsx
 *.suo
 *.ntvs*
 *.njsproj
