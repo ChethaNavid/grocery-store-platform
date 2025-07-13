@@ -6,24 +6,32 @@ import SignUp from './pages/SignUp/SignUp';
 import CategoryPage from "./components/Categories/CategoryPage";
 import SearchResult from "./components/SearchResult/SearchResult";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
+import Payment from "./components/Payment/Payment";
+import { CartProvider } from "./context/CartContext";
+import { UserProvider } from "./context/UserContext";
 
 function App() {
 
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/admin" element={
-          <ProtectedRoute requiredRole="admin">
-            <AdminHome />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/:categoryName" element={<AdminHome />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/category/:categoryName" element={<CategoryPage />} />
-        <Route path="/search/:query" element={<SearchResult />} />
-      </Routes>
+      <UserProvider>
+        <CartProvider>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/admin" element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminHome />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/:categoryName" element={<AdminHome />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/category/:categoryName" element={<CategoryPage />} />
+            <Route path="/search/:query" element={<SearchResult />} />
+            <Route path="/payment" element={<Payment />} />
+          </Routes>
+        </CartProvider>
+      </UserProvider>
     </Router>
   )
 }

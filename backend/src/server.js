@@ -7,6 +7,7 @@ import adminRouter from '../routes/adminRouter.js';
 import { authorizeRole } from '../middleware/authorizeRole.js';
 import userRouter from '../routes/user.route.js';
 import authenticateToken from '../middleware/auth.js';
+import orderRouter from '../routes/order.route.js';
 dotenv.config();
 
 
@@ -27,6 +28,7 @@ try {
 app.use('/', productRouter);
 app.use('/admin', authenticateToken, authorizeRole('admin'), adminRouter);
 app.use('/', userRouter);
+app.use("/", orderRouter);
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on http://localhost:${process.env.PORT}`);
