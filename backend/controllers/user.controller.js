@@ -119,7 +119,7 @@ const getUser = async (req, res) => {
         id: existingUser.id,
         username: existingUser.username,
         email: existingUser.email,
-        phoneNum: existingUser.phoneNum,
+        phoneNumber: existingUser.phoneNumber,
         role: existingUser.Role?.name
     };
 
