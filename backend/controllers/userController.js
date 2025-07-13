@@ -35,44 +35,32 @@ const getAllRoles = async (req, res) => {
   }
 };
 
-// PUT /database_admin/users/:id - Edit user
+// PUT /admin/users/:id
 const editUser = async (req, res) => {
-  const { id } = req.params;
-  const { name, email, roleId } = req.body;
-
-  if (!name && !email && !roleId) {
-    return res.status(400).json({ error: true, message: "No changes provided." });
-  }
+  const { username, email, roleId } = req.body;
+  const userId = req.params.id;
 
   try {
-    const user = await User.findByPk(id);
-    if (!user) {
-      return res.status(404).json({ error: true, message: "User not found." });
+    const [updated] = await db.User.update(
+      { username, email, roleId },
+      { where: { id: userId } }
+    );
+
+    if (updated) {
+      const updatedUser = await db.User.findOne({
+        where: { id: userId },
+        include: db.Role
+      });
+      res.json({ message: "User updated successfully", user: updatedUser });
+    } else {
+      res.status(404).json({ message: "User not found or no changes" });
     }
-
-    user.name = name || user.name;
-    user.email = email || user.email;
-    user.roleId = roleId || user.roleId;
-
-    await user.save();
-
-    const updatedUser = await User.findByPk(id, {
-      include: { model: Role, attributes: ['id', 'name'] }
-    });
-
-    return res.status(200).json({
-      error: false,
-      user: updatedUser,
-      message: "User updated successfully."
-    });
   } catch (error) {
     console.error("Error updating user:", error);
-    if (error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(400).json({ error: true, message: "Email already exists." });
-    }
-    return res.status(500).json({ error: true, message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 // DELETE /database_admin/users/:id - Delete user
 const deleteUser = async (req, res) => {

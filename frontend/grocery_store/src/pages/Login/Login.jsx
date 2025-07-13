@@ -40,6 +40,8 @@ const Login = () => {
             const decoded = jwtDecode(token);
             if(decoded.role === "admin") {
                 navigate('/admin');
+            } else if (decoded.role === "database_admin") {
+                navigate('/database_admin/users');
             } else {
                 navigate('/')
             }

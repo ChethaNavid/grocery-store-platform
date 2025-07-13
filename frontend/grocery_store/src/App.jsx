@@ -16,7 +16,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/admin" element={
           <ProtectedRoute requiredRole="admin">
-            <AdminUserPage />
+            <AdminHome />
           </ProtectedRoute>
         } />
         <Route path="/database_admin/users" element={
