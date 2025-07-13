@@ -1,10 +1,12 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MdShoppingCart } from 'react-icons/md';
+import { CartContext } from '../../context/CartContext';
 
 const Auth = ({ isLoggedIn, onLogout }) => {
 
   const navigate = useNavigate();
+  const { cartItems } = useContext(CartContext); 
 
   return (
     <div className='flex items-center text-sm gap-5'>
@@ -21,9 +23,11 @@ const Auth = ({ isLoggedIn, onLogout }) => {
         </>
       )}
         <button className="relative">
-          <MdShoppingCart className="text-2xl text-gray-800" />
+          <MdShoppingCart className="text-2xl text-gray-800" 
+            onClick={() => navigate("/payment")}
+          />
           <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1 rounded-full">
-            2
+            {cartItems.length}
           </span>
         </button>
     </div>

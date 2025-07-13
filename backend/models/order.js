@@ -15,10 +15,6 @@ export const Order = sequelize.define("Order", {
         type: DataTypes.ENUM("pending", "delivered", "cancelled"),
         defaultValue: "pending"
     },
-    address: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
     orderDate: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW

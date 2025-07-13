@@ -1,14 +1,16 @@
-import { React, useState} from 'react'
+import { React, useContext, useState} from 'react'
 import { useNavigate, Link } from 'react-router-dom';
 import PasswordInput from '../../components/Input/PasswordInput';
 import { validateEmail } from '../../utils/validateEmail';
 import axiosInstance from '../../utils/axiosInstance';
 import { jwtDecode } from 'jwt-decode';
+import { UserContext } from '../../context/UserContext';
 
 const Login = () => {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const { setUserInfo } = useContext(UserContext);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -36,6 +38,7 @@ const Login = () => {
         if(response.data && response.data.token) {
             const token = response.data.token;
             localStorage.setItem("token", response.data.token)
+            setUserInfo(response.data.user);
 
             const decoded = jwtDecode(token);
             if(decoded.role === "admin") {

@@ -3,7 +3,7 @@ import { DataTypes } from "sequelize";
 
 export const Payment = sequelize.define("Payment", {
   method: {
-    type: DataTypes.ENUM("creditCard", "ABA", "ACELEDA"),
+    type: DataTypes.ENUM("creditCard", "paypal", "offline"),
     allowNull: false
   },
   status: {

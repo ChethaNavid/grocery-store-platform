@@ -8,6 +8,7 @@ import adminUserRouter from '../routes/databaseAdminRoute.js';
 import { authorizeRole } from '../middleware/authorizeRole.js';
 import userRouter from '../routes/user.route.js';
 import authenticateToken from '../middleware/auth.js';
+import orderRouter from '../routes/order.route.js';
 dotenv.config();
 
 
@@ -19,7 +20,7 @@ app.use(cors({
 }))
 
 try {
-  const result = await sequelize.sync()
+  const result = await sequelize.sync({ alter: true })
   console.log(result);
 } catch (error) {
   console.error('Unable to connect to the database:', error);
@@ -29,6 +30,7 @@ app.use('/', productRouter);
 app.use('/admin', authenticateToken, authorizeRole('admin'), adminRouter);
 app.use('/database_admin', authenticateToken, authorizeRole('database_admin'), adminUserRouter);
 app.use('/', userRouter);
+app.use("/", orderRouter);
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on http://localhost:${process.env.PORT}`);
