@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import NavBar from '../../components/NavBar/NavBar'
 import AdsCard from '../../components/Card/AdsCard'
 import ProductCard from '../../components/Card/ProductCard'
@@ -7,14 +7,11 @@ import CategoriesNavbar from '../../components/NavBar/CategoriesNavbar'
 import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../../utils/axiosInstance'
 import AddToCartModal from './AddToCartModal'
+import { CartContext } from '../../context/CartContext'
 
 const Home = () => {
   const navigate = useNavigate();
-
-  const [imgURL, setImgURL] = useState("");
-  const [category, setCategory] = useState("");
-  const [productName, setproductName] = useState("");
-  const [price, setPrice] = useState(0);
+  const { addToCart } = useContext(CartContext);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -31,7 +28,7 @@ const Home = () => {
   const [isLoggedIn, setisLoggedIn] = useState(false);
   
   const onLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem('token');
     navigate('/login');
     setisLoggedIn(false);
   }
@@ -87,8 +84,12 @@ const Home = () => {
   }
 
   const confirmAddToCart = (quantity) => {
-    // TODO: dispatch to your cart/store:
-    // cart.add(selectedProduct, quantity)
+    addToCart(selectedProduct, quantity)
+    setShowToastMsg({
+      isShown: true,
+      type: 'add',
+      message: `${selectedProduct.name} added to cart!`
+    });
     closeModal()
   }
 
