@@ -16,26 +16,6 @@ function App() {
 
   return (
     <Router>
-<<<<<<< HEAD
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/admin" element={
-          <ProtectedRoute requiredRole="admin">
-            <AdminHome />
-          </ProtectedRoute>
-        } />
-        <Route path="/database_admin/users" element={
-          <ProtectedRoute requiredRole="database_admin">
-            <AdminUserPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/:categoryName" element={<AdminHome />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/category/:categoryName" element={<CategoryPage />} />
-        <Route path="/search/:query" element={<SearchResult />} />
-      </Routes>
-=======
       <UserProvider>
         <CartProvider>
           <Routes>
@@ -60,7 +40,6 @@ function App() {
           </Routes>
         </CartProvider>
       </UserProvider>
->>>>>>> f56f29c49e1a1e364942bbe944faa9f82dbe166a
     </Router>
   )
 }
