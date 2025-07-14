@@ -23,12 +23,14 @@ const Auth = ({ isLoggedIn, onLogout }) => {
         </>
       )}
         <button className="relative">
-          <MdShoppingCart className="text-2xl text-gray-800" 
+          <MdShoppingCart className="text-gray-800" size={24} 
             onClick={() => navigate("/payment")}
           />
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1 rounded-full">
-            {cartItems.length}
-          </span>
+          {cartItems.length > 0 && (
+            <span className="absolute -top-0 -right-0 -translate-y-1/2 translate-x-1/2  bg-red-600 flex items-center justify-center text-white text-xs font-semibold w-4 h-4 rounded-full shadow-md">
+              {cartItems.length}
+            </span>
+          )}
         </button>
     </div>
   )
