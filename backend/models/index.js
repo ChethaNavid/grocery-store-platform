@@ -58,7 +58,7 @@ User.hasMany(Order, {
 });
 
 // Associations
-Order.hasOne(OrderDetail, {
+Order.hasMany(OrderDetail, {
   foreignKey: {
     name: 'orderId',
     allowNull: false
