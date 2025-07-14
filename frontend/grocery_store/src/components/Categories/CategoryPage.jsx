@@ -8,10 +8,16 @@ import CategoriesNavbar from '../../components/NavBar/CategoriesNavbar'
 import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../../utils/axiosInstance'
 import AddToCartModal from '../../pages/Home/AddToCartModal';
+import { CartContext } from '../../context/CartContext';
+import { useContext } from 'react';
+import { UserContext } from '../../context/UserContext';
+import ToastMessage from '../ToastMessage/ToastMessage';
 
 const CategoryPage = () => {
   const { categoryName } = useParams();
   const navigate = useNavigate();
+  const { addToCart } = useContext(CartContext);
+  const { userInfo } = useContext(UserContext);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -23,12 +29,11 @@ const CategoryPage = () => {
   });
 
   const [allProduct, setAllProduct] = useState([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const isLoggedIn = Boolean(userInfo); 
 
   const onLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem('token');
     navigate('/login');
-    setIsLoggedIn(false);
   }
 
   // Get All Products
@@ -44,6 +49,7 @@ const CategoryPage = () => {
   }
 
   const handleAddButton = (product) => {
+    if (!isLoggedIn) return navigate('/');
     setSelectedProduct(product);
     setIsModalOpen(true);
   }
@@ -54,8 +60,12 @@ const CategoryPage = () => {
   }
 
   const confirmAddToCart = (quantity) => {
-    // TODO: dispatch to your cart/store:
-    // cart.add(selectedProduct, quantity)
+    addToCart(selectedProduct, quantity)
+    setShowToastMsg({
+      isShown: true,
+      type: 'add',
+      message: `${selectedProduct.name} added to cart!`
+    });
     closeModal()
   }
 
@@ -99,6 +109,13 @@ const CategoryPage = () => {
           onAdd={confirmAddToCart}
         />
       )}
+
+      <ToastMessage
+        isShown={showToastMsg.isShown}
+        type={showToastMsg.type}
+        message={showToastMsg.message}
+        onClose={() => setShowToastMsg(prev => ({ ...prev, isShown: false }))}
+      />
 
     </div>
   )

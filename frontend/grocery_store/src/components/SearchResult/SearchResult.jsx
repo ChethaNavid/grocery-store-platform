@@ -56,32 +56,40 @@ const SearchResult = () => {
 
       <p className='m-4 text-xl'>Search Results for <strong>{query}</strong></p>
 
-      <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 px-4 pb-8'>
-        {allProduct.length > 0 ? allProduct.map((item) => (
-          <ProductCard
-            key={item.id}
-            imgURL={item.imageUrl}
-            category={item.Category?.name}
-            productName={item.name}
-            price={`$${item.price}`}
-            handleAddButton={() => handleAddButton(item)}
-          />
-        )) : (
-          <p className='text-center col-span-full text-gray-600'>No matching products found.</p>
-        )}
-      </div>
+      {allProduct.length === 0 ? (
+        <div className='flex justify-center items-center h-[60vh]'>
+          <p className='text-gray-600 text-lg'>
+            No matching products found.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 px-4 pb-8'>
+            {allProduct.map((item) => (
+              <ProductCard
+                key={item.id}
+                imgURL={item.imageUrl}
+                category={item.Category?.name}
+                productName={item.name}
+                price={`$${item.price}`}
+                handleAddButton={() => handleAddButton(item)}
+              />
+            ))}
+          </div>
 
-      <FooterCard />
+          <FooterCard />
 
-      {isModalOpen && selectedProduct && (
-        <AddToCartModal
-          product={{
-            ...selectedProduct,
-            category: selectedProduct.Category?.name
-          }}
-          onClose={closeModal}
-          onAdd={() => {}}
-        />
+          {isModalOpen && selectedProduct && (
+            <AddToCartModal
+              product={{
+                ...selectedProduct,
+                category: selectedProduct.Category?.name
+              }}
+              onClose={closeModal}
+              onAdd={() => {}}
+            />
+          )}
+        </>
       )}
     </div>
   );

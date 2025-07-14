@@ -41,8 +41,15 @@ export const CartProvider = ({ children }) => {
   const removeFromCart = id =>
     setCartItems(prev => prev.filter(item => item.id !== id));
 
+  const clearCart = () => {
+    setCartItems([]);
+    if (userInfo?.id) {
+      localStorage.removeItem(`cartItems_${userInfo.id}`);
+    }
+  };
+
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart }}>
+    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, clearCart }}>
       {children}
     </CartContext.Provider>
   );

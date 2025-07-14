@@ -8,9 +8,12 @@ import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../../utils/axiosInstance'
 import AddToCartModal from './AddToCartModal'
 import { CartContext } from '../../context/CartContext'
+import { useRef } from 'react'
+import ToastMessage from '../../components/ToastMessage/ToastMessage'
 
 const Home = () => {
   const navigate = useNavigate();
+  const featuredRef = useRef();
   const { addToCart } = useContext(CartContext);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -106,9 +109,9 @@ const Home = () => {
 
       <CategoriesNavbar />
 
-      <AdsCard />
+      <AdsCard onShopNow={() => featuredRef.current?.scrollIntoView({ behavior: 'smooth' })} />
 
-      <p className='m-4 text-xl font-bold'>Featurd Products</p>
+      <p ref={featuredRef} className='m-4 text-xl font-bold'>Featurd Products</p>
 
       <div className='overflow-x-auto scrollbar-hide scroll-smooth pb-4 mr-4'>
         <div className='flex gap-6 ml-4'>
@@ -133,7 +136,8 @@ const Home = () => {
         <div className='flex gap-6 ml-4'>
           {popularProduct.map((items) => {
             return (
-              <ProductCard 
+              <ProductCard
+                key={items.id} 
                 imgURL={items.imageUrl}
                 category={items.Category?.name}
                 productName={items.name}
@@ -157,6 +161,13 @@ const Home = () => {
           onAdd={confirmAddToCart}
         />
       )}
+
+      <ToastMessage
+        isShown={showToastMsg.isShown}
+        type={showToastMsg.type}
+        message={showToastMsg.message}
+        onClose={() => setShowToastMsg(prev => ({ ...prev, isShown: false }))}
+      />
 
     </div>
   )

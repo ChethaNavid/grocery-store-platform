@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import Payment from "./components/Payment/Payment";
 import { CartProvider } from "./context/CartContext";
 import { UserProvider } from "./context/UserContext";
+import OrderSuccess from "./components/Payment/OrderSuccess";
 
 function App() {
 
@@ -35,6 +36,7 @@ function App() {
             <Route path="/category/:categoryName" element={<CategoryPage />} />
             <Route path="/search/:query" element={<SearchResult />} />
             <Route path="/payment" element={<Payment />} />
+            <Route path="/success-order" element={<OrderSuccess />} />
           </Routes>
         </CartProvider>
       </UserProvider>

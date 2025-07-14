@@ -76,6 +76,13 @@ const Payment = () => {
             pricePerUnit: item.price
           })
         }))
+
+        await axiosInstance.post("/create-payment", {
+          orderId: order.id,
+          method: selectedMethod,
+          amount: total
+        })
+        navigate("/success-order");
       }
     } catch(error) {
       console.error(error);

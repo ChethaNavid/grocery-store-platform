@@ -11,7 +11,6 @@ const CategoriesNavbar = () => {
       <Link to="/category/bakery">Bakery</Link>
       <Link to="/category/beverages">Beverages</Link>
       <Link to="/category/snacks">Snacks</Link>
-      <Link to="/category/frozen">Frozen</Link>
     </nav>
   )
 }
