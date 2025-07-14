@@ -3,18 +3,15 @@ import axiosInstance from '../../utils/axiosInstance';
 import NavBarAdmin from '../../components/Admin/NavBarAdmin';
 import { Pencil, Trash } from 'lucide-react';
 
-// Reusable Button Component
-const Button = ({ onClick, type = "button", children, className = '' }) => (
+const IconButton = ({ onClick, children, color = 'bg-gray-200' }) => (
   <button
     onClick={onClick}
-    type={type}
-    className={`px-3 py-1 rounded font-medium shadow hover:opacity-90 transition ${className}`}
+    className={`p-2 rounded-full hover:opacity-80 transition ${color}`}
   >
     {children}
   </button>
 );
 
-// Edit User Modal
 const EditUserModal = ({ user, roles, onClose, onSave }) => {
   const [form, setForm] = useState({
     username: user?.username || '',
@@ -26,7 +23,7 @@ const EditUserModal = ({ user, roles, onClose, onSave }) => {
     setForm({
       username: user?.username || '',
       email: user?.email || '',
-      roleId: user?.Role?.id || ''
+      roleId: user?.Role?.id || '',
     });
   }, [user]);
 
@@ -36,50 +33,62 @@ const EditUserModal = ({ user, roles, onClose, onSave }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Form submitted:", form);
+    console.log("Form Submitted:", form);
+    alert("Form submitted");
     onSave(form);
   };
 
   if (!user) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4 text-center">Edit User</h2>
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+      <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center">Edit User</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            className="border w-full px-3 py-2 rounded focus:outline-none focus:ring focus:border-blue-300"
-            name="username"
-            value={form.username}
-            onChange={handleChange}
-            placeholder="Username"
-            required
-          />
-          <input
-            className="border w-full px-3 py-2 rounded focus:outline-none focus:ring focus:border-blue-300"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="Email"
-            required
-          />
-          <select
-            className="border w-full px-2 py-1 rounded"
-            name="roleId"
-            value={form.roleId}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Role</option>
-            {roles.map((role) => (
-              <option key={role.id} value={role.id}>
-                {role.name}
-              </option>
-            ))}
-          </select>
-          <div className="flex justify-end gap-3 pt-2">
-            <Button onClick={onClose} className="bg-gray-300 text-gray-800">Cancel</Button>
-            <Button type="submit" className="bg-blue-600 text-white">Save</Button>
+          <div>
+            <label className="block text-sm font-medium mb-1">Username</label>
+            <input
+              name="username"
+              value={form.username}
+              onChange={handleChange}
+              className="w-full border px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Email</label>
+            <input
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              className="w-full border px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Role</label>
+            <select
+              name="roleId"
+              value={form.roleId}
+              onChange={handleChange}
+              className="w-full border px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">Select a role</option>
+              {roles.map((role) => (
+                <option key={role.id} value={role.id}>
+                  {role.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex justify-end gap-4 pt-4">
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300">
+              Cancel
+            </button>
+            <button type="submit" className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
+              Save
+            </button>
           </div>
         </form>
       </div>
@@ -95,7 +104,7 @@ const AdminUserPage = () => {
   const getUsers = async () => {
     try {
       const response = await axiosInstance.get('/database_admin/users');
-      if (response.data?.users) setAllUsers(response.data.users);
+      setAllUsers(response.data?.users || []);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -104,7 +113,7 @@ const AdminUserPage = () => {
   const getRoles = async () => {
     try {
       const response = await axiosInstance.get('/database_admin/roles');
-      if (response.data?.roles) setRoles(response.data.roles);
+      setRoles(response.data?.roles || []);
     } catch (error) {
       console.error("Error fetching roles:", error);
     }
@@ -113,15 +122,12 @@ const AdminUserPage = () => {
   const handleEdit = (user) => setEditUser(user);
 
   const handleSaveEdit = async (form) => {
-    console.log("Submitting to backend:", form);
     try {
-      const updatedData = {
+      await axiosInstance.put(`/database_admin/users/${editUser.id}`, {
         username: form.username,
         email: form.email,
-        roleId: parseInt(form.roleId)
-      };
-      await axiosInstance.put(`/database_admin/users/${editUser.id}`, updatedData);
-      console.log("Save successful");
+        roleId: parseInt(form.roleId),
+      });
       setEditUser(null);
       getUsers();
     } catch (error) {
@@ -145,36 +151,36 @@ const AdminUserPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-800">
+    <div className="min-h-screen bg-gray-100">
       <NavBarAdmin />
-      <div className="pt-24 max-w-6xl mx-auto px-4">
-        <h1 className="text-4xl font-bold mb-8">User Management</h1>
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <table className="min-w-full text-sm text-left">
-            <thead className="bg-gray-200 text-gray-600 uppercase">
+      <div className="pt-24 px-6 max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">User Management</h1>
+        <div className="bg-white shadow rounded-xl overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-100 text-gray-600 text-sm">
               <tr>
-                <th className="px-4 py-3">ID</th>
-                <th className="px-4 py-3">Username</th>
-                <th className="px-4 py-3">Email</th>
-                <th className="px-4 py-3">Role</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+                <th className="px-6 py-3 text-left font-medium">ID</th>
+                <th className="px-6 py-3 text-left font-medium">Username</th>
+                <th className="px-6 py-3 text-left font-medium">Email</th>
+                <th className="px-6 py-3 text-left font-medium">Role</th>
+                <th className="px-6 py-3 text-right font-medium">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="bg-white divide-y divide-gray-100">
               {allUsers.length > 0 ? (
                 allUsers.map((user) => (
-                  <tr key={user.id} className="border-t hover:bg-gray-50">
-                    <td className="px-4 py-2">{user.id}</td>
-                    <td className="px-4 py-2">{user.username}</td>
-                    <td className="px-4 py-2">{user.email}</td>
-                    <td className="px-4 py-2">{user.Role?.name || 'N/A'}</td>
-                    <td className="px-4 py-2 text-right space-x-2">
-                      <Button onClick={() => handleEdit(user)} className="bg-blue-500 text-white">
-                        <Pencil size={16} />
-                      </Button>
-                      <Button onClick={() => handleDelete(user.id)} className="bg-red-500 text-white">
-                        <Trash size={16} />
-                      </Button>
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">{user.id}</td>
+                    <td className="px-6 py-4">{user.username}</td>
+                    <td className="px-6 py-4">{user.email}</td>
+                    <td className="px-6 py-4">{user.Role?.name || 'N/A'}</td>
+                    <td className="px-6 py-4 text-right space-x-2">
+                      <IconButton onClick={() => handleEdit(user)} color="bg-blue-500 text-white">
+                        <Pencil size={18} />
+                      </IconButton>
+                      <IconButton onClick={() => handleDelete(user.id)} color="bg-red-500 text-white">
+                        <Trash size={18} />
+                      </IconButton>
                     </td>
                   </tr>
                 ))
