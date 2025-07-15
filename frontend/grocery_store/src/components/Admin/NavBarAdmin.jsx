@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const NavBarAdmin = ({ handleAddProduct, handleViewUsers }) => {
+const NavBarAdmin = ({ handleAddProduct }) => {
   const navigate = useNavigate();
   return (
     <div className='flex justify-between items-center bg-white w-full px-10 py-2.5 fixed z-50 top-0 left-0 border-b-2'>
@@ -13,7 +13,6 @@ const NavBarAdmin = ({ handleAddProduct, handleViewUsers }) => {
         </div>
       </div>
       <div className='flex items-center gap-4'>
-        <button className='primary-btn text-sm' onClick={handleViewUsers}>View Users</button>
         <button className='primary-btn text-sm' onClick={handleAddProduct}>Add Product</button>
       </div>
     </div>

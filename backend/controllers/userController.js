@@ -1,87 +1,137 @@
-import { Category, Product, User, Role } from "../models/index.js";
-import dotenv from 'dotenv';
-dotenv.config();
+import { sequelize } from "../models/index.js";
 
-/**
- * =========================
- * User & Role Admin Routes
- * =========================
- */
-
-// GET /database_admin/users - Get all users with their roles
+// GET all MySQL users
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.findAll({
-      include: {
-        model: Role,
-        attributes: ['id', 'name'],
-      },
-    });
-    return res.status(200).json({ users }); // Must return { users: [...] }
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    return res.status(500).json({ error: true, message: "Internal Server Error" });
+    const [results] = await sequelize.query(`
+      SELECT 
+        User AS username,
+        Host,
+        account_locked,
+        password_expired
+      FROM mysql.user;
+    `);
+
+    if (!results.length) {
+      return res.status(404).json({ error: true, message: "No MySQL users found." });
+    }
+
+    res.status(200).json({ error: false, users: results });
+  } catch (err) {
+    console.error("Error fetching MySQL users:", err);
+    res.status(500).json({ error: true, message: err.message });
   }
 };
 
-// GET /database_admin/roles - Get all roles
-const getAllRoles = async (req, res) => {
-  try {
-    const roles = await Role.findAll();
-    return res.status(200).json({ roles });
-  } catch (error) {
-    console.error("Error fetching roles:", error);
-    return res.status(500).json({ error: true, message: "Internal Server Error" });
+// CREATE a new MySQL user
+const createUser = async (req, res) => {
+  const { username, password, host = '%', privileges = [], db = 'groceries_ecommerce.*' } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ error: true, message: "Username and password are required." });
   }
-};
-
-// PUT /admin/users/:id
-const editUser = async (req, res) => {
-  const { username, email, roleId } = req.body;
-  const userId = req.params.id;
 
   try {
-    const [updated] = await db.User.update(
-      { username, email, roleId },
-      { where: { id: userId } }
+    // Check if the user already exists
+    const [userExists] = await sequelize.query(
+      `SELECT 1 FROM mysql.user WHERE User = ? AND Host = ?`,
+      { replacements: [username, host] }
     );
 
-    if (updated) {
-      const updatedUser = await db.User.findOne({
-        where: { id: userId },
-        include: db.Role
-      });
-      res.json({ message: "User updated successfully", user: updatedUser });
-    } else {
-      res.status(404).json({ message: "User not found or no changes" });
+    if (userExists.length > 0) {
+      return res.status(400).json({ error: true, message: "User already exists." });
     }
-  } catch (error) {
-    console.error("Error updating user:", error);
-    res.status(500).json({ message: "Internal server error" });
+
+    // 1. Create user
+    await sequelize.query(
+      `CREATE USER \`${username}\`@\`${host}\` IDENTIFIED BY ?`, 
+      { replacements: [password] }
+    );
+
+    // 2. Grant privileges if any
+    if (Array.isArray(privileges) && privileges.length > 0) {
+      const privList = privileges.join(', ');
+      await sequelize.query(
+        `GRANT ${privList} ON \`${db}\`.* TO \`${username}\`@\`${host}\``
+      );
+    }
+
+    // 3. Flush privileges
+    await sequelize.query(`FLUSH PRIVILEGES`);
+
+    res.status(201).json({ error: false, message: "MySQL user created and privileges assigned." });
+  } catch (err) {
+    console.error("Error creating MySQL user:", err.message);
+    res.status(500).json({
+      error: true,
+      message: "Failed to create MySQL user.",
+      details: err.message
+    });
   }
 };
+  
 
-
-// DELETE /database_admin/users/:id - Delete user
-const deleteUser = async (req, res) => {
-  const { id } = req.params;
+// UPDATE a MySQL user's password or host
+const editUser = async (req, res) => {
+  const { username } = req.params;
+  const { newPassword, newHost = '%' } = req.body;
 
   try {
-    const user = await User.findByPk(id);
-    if (!user) {
-      return res.status(404).json({ error: true, message: 'User not found.' });
+    if (newPassword) {
+      await sequelize.query(`ALTER USER ?@'%' IDENTIFIED BY ?`, {
+        replacements: [username, newPassword],
+      });
     }
 
-    await User.destroy({ where: { id } });
+    if (newHost !== '%') {
+      // Create new host user if changing host
+      await sequelize.query(`CREATE USER ?@? IDENTIFIED BY ?`, {
+        replacements: [username, newHost, newPassword || 'defaultPassword'],
+      });
 
-    return res.status(200).json({
-      error: false,
-      message: "User deleted successfully."
-    });
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    return res.status(500).json({ error: true, message: "Internal Server Error" });
+      // Drop old host user
+      await sequelize.query(`DROP USER ?@'%'`, { replacements: [username] });
+    }
+
+    await sequelize.query(`FLUSH PRIVILEGES;`);
+    res.status(200).json({ error: false, message: "MySQL user updated." });
+  } catch (err) {
+    console.error("Error updating MySQL user:", err);
+    res.status(500).json({ error: true, message: "Failed to update user." });
   }
 };
 
-export { getAllUsers, getAllRoles, editUser, deleteUser };
+// DELETE a MySQL user
+const deleteUser = async (req, res) => {
+  const { username } = req.params;
+
+  try {
+    // Check if user exists before attempting to delete
+    const [userExists] = await sequelize.query(
+      `SELECT 1 FROM mysql.user WHERE User = ?`,
+      { replacements: [username] }
+    );
+
+    if (userExists.length === 0) {
+      return res.status(404).json({ error: true, message: "User not found." });
+    }
+
+    // Drop user if it exists
+    await sequelize.query(`DROP USER IF EXISTS ?@'%'`, {
+      replacements: [username],
+    });
+
+    await sequelize.query(`FLUSH PRIVILEGES;`);
+
+    res.status(200).json({ message: "MySQL user deleted successfully." });
+  } catch (err) {
+    console.error('Error deleting user:', err);
+    res.status(500).json({
+      error: true,
+      message: "Failed to delete MySQL user.",
+      details: err.message,
+    });
+  }
+};
+
+export { getAllUsers, createUser, editUser, deleteUser };
