@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MdClose } from 'react-icons/md';
-import axiosInstance from '../../utils/axiosInstance'; // Adjust path as needed
+import axiosInstance from '../../utils/axiosInstance';
 
 const AddEditUser = ({
   mode = 'add',
@@ -15,6 +15,8 @@ const AddEditUser = ({
     username: '',
     phoneNumber: '',
     password: '',
+    currentPassword: '', // For edit mode
+    newPassword: '',     // For edit mode
     privileges: [],
     tables: [],
   });
@@ -39,15 +41,18 @@ const AddEditUser = ({
       setFormData({
         username: user.username || '',
         phoneNumber: user.phoneNumber || '',
-        password: '',
+        currentPassword: '', // Reset password fields for edit
+        newPassword: '',
         privileges: user.privileges || [],
-        tables: user.tables || [],
+        tables: [], // Clear tables before edit
       });
     } else {
       setFormData({
         username: '',
         phoneNumber: '',
         password: '',
+        currentPassword: '',
+        newPassword: '',
         privileges: [],
         tables: [],
       });
@@ -68,28 +73,28 @@ const AddEditUser = ({
     }));
   };
 
-const handleSubmit = (e) => {
-  e.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-  const payload = {
-    privileges: formData.privileges,
-    tables: formData.tables,
-  };
+    const payload = {
+      privileges: formData.privileges,
+      tables: formData.tables,
+    };
 
-  if (mode === 'add') {
-    payload.username = formData.username;
-    payload.phoneNumber = formData.phoneNumber;
-    payload.password = formData.password; // required in add mode
-  } else if (mode === 'edit') {
-    // Only send newPassword if not empty
-    if (formData.password.trim()) {
-      payload.newPassword = formData.password.trim();
+    if (mode === 'add') {
+      payload.username = formData.username;
+      payload.phoneNumber = formData.phoneNumber;
+      payload.password = formData.password; // Required in add mode
+    } else if (mode === 'edit') {
+      payload.username = formData.username;
+      payload.currentPassword = formData.currentPassword.trim(); // Send currentPassword for validation
+      if (formData.newPassword.trim()) {
+        payload.newPassword = formData.newPassword.trim(); // Send newPassword if provided
+      }
     }
-  }
 
-  onSubmit(payload);
-};
-
+    onSubmit(payload);
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
@@ -132,21 +137,54 @@ const handleSubmit = (e) => {
             />
           </div>
 
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Password {mode === 'edit' && '(leave blank to keep current)'}
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder={mode === 'edit' ? '••••••••' : 'Enter password'}
-              className="w-full px-3 py-2 border rounded-lg"
-              required={mode === 'add'}
-            />
-          </div>
+          {/* Password (Add mode only) */}
+          {mode === 'add' && (
+            <div>
+              <label className="block text-sm font-medium mb-1">Password</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter password"
+                className="w-full px-3 py-2 border rounded-lg"
+                required
+              />
+            </div>
+          )}
+
+          {/* Edit Mode - Current Password */}
+          {mode === 'edit' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium mb-1">Current Password</label>
+                <input
+                  type="password"
+                  name="currentPassword"
+                  value={formData.currentPassword}
+                  onChange={handleChange}
+                  placeholder="Enter current password"
+                  className="w-full px-3 py-2 border rounded-lg"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  New Password (leave blank to keep current)
+                </label>
+                <input
+                  type="password"
+                  name="newPassword"
+                  value={formData.newPassword}
+                  onChange={handleChange}
+                  placeholder="Enter new password"
+                  className="w-full px-3 py-2 border rounded-lg"
+                  required={mode === 'edit' && !formData.newPassword.trim()}
+                />
+              </div>
+            </>
+          )}
 
           {/* Privileges */}
           <div>

@@ -103,54 +103,96 @@ const createUser = async (req, res) => {
 // Updates password, privileges, and tables
 const editUser = async (req, res) => {
   const { username } = req.params;
-  const { newPassword, privileges = [], db = 'groceries_ecommerce', tables = [] } = req.body;
+  let {
+    currentPassword,       // Required for recreating the user
+    newPassword,           // Optional — update password if provided
+    privileges = [],
+    db = 'groceries_ecommerce',
+    tables = [],
+    phoneNumber = '',      // Optional — for your app DB
+  } = req.body;
+
+  console.log('EDIT REQUEST:', {
+    username,
+    currentPassword,
+    newPassword,
+    privileges,
+    db,
+    tables,
+  });
 
   try {
-    // 1. Update password if provided
+    // ✅ Require current password
+    if (!currentPassword || !currentPassword.trim()) {
+      return res.status(400).json({
+        error: true,
+        message: "Current password is required to recreate MySQL user.",
+      });
+    }
+
+    // 🛡 Fix malformed tables like ["orders,database_roles"]
+    if (typeof tables === 'string') {
+      tables = tables.split(',').map(t => t.trim());
+    } else if (
+      Array.isArray(tables) &&
+      tables.length === 1 &&
+      typeof tables[0] === 'string' &&
+      tables[0].includes(',')
+    ) {
+      tables = tables[0].split(',').map(t => t.trim());
+    }
+
+    console.log('✅ Cleaned tables:', tables);
+
+    // ✅ Step 1: Drop the MySQL user
+    await sequelize.query(`DROP USER IF EXISTS \`${username}\`@'%'`);
+    console.log(`✅ Dropped user ${username}@%`);
+
+    // ✅ Step 2: Recreate user with the old (current) password
+    await sequelize.query(
+      `CREATE USER \`${username}\`@'%' IDENTIFIED BY ?`,
+      { replacements: [currentPassword.trim()] }
+    );
+    console.log(`✅ Recreated user ${username}@% with current password`);
+
+    // ✅ Step 3: If newPassword is provided, update it
     if (newPassword && newPassword.trim()) {
       await sequelize.query(
         `ALTER USER \`${username}\`@'%' IDENTIFIED BY ?`,
         { replacements: [newPassword.trim()] }
       );
-      console.log(`Password updated for ${username}@%`);
+      console.log(`✅ Password updated for ${username}@%`);
     }
 
-    // 2. Revoke all privileges
-    await sequelize.query(
-      `REVOKE ALL PRIVILEGES, GRANT OPTION FROM \`${username}\`@'%'`
-    );
-    console.log(`Privileges revoked from ${username}@%`);
-
-    // 3. Grant privileges
-    if (
-      Array.isArray(privileges) && privileges.length > 0 &&
-      Array.isArray(tables) && tables.length > 0
-    ) {
+    // ✅ Step 4: Grant new privileges to specified tables
+    if (privileges.length > 0 && tables.length > 0) {
       const privList = privileges.join(', ');
       for (const table of tables) {
-        if (typeof table === 'string' && table.trim()) {
-          const safeTable = table.trim().replace(/`/g, '');
-          await sequelize.query(
-            `GRANT ${privList} ON \`${db}\`.\`${safeTable}\` TO \`${username}\`@'%'`
-          );
-        } else {
-          console.warn("Skipped invalid table:", table);
-        }
+        const grantSQL = `GRANT ${privList} ON \`${db}\`.\`${table}\` TO \`${username}\`@'%'`;
+        console.log('Executing GRANT:', grantSQL);
+        await sequelize.query(grantSQL);
       }
+      console.log(`✅ Privileges granted to ${username}@%`);
     }
 
+    // ✅ Step 5: Flush privileges
     await sequelize.query(`FLUSH PRIVILEGES`);
-    return res.status(200).json({ error: false, message: "User updated successfully." });
+
+    return res.status(200).json({
+      error: false,
+      message: "User dropped, recreated, and updated successfully.",
+    });
 
   } catch (err) {
-    console.error("Error updating user:", err);
+    console.error("❌ Error editing user:", err);
     return res.status(500).json({
       error: true,
-      message: "Failed to update user.",
+      message: "Failed to edit MySQL user.",
       details: err.message,
     });
   }
 };
+
 
 // DELETE a MySQL user
 const deleteUser = async (req, res) => {
