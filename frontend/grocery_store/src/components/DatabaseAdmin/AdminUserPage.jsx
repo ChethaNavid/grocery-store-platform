@@ -10,6 +10,7 @@ const AdminUserPage = () => {
   const [availablePrivileges, setAvailablePrivileges] = useState([]);
   const [editUser, setEditUser] = useState(false);
   const [showAddUserForm, setShowAddUserForm] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const getUsers = async () => {
     try {
@@ -35,10 +36,13 @@ const AdminUserPage = () => {
     try {
       await axiosInstance.post('/database_admin/create-user', formData);
       setShowAddUserForm(false);
+      setErrorMessage(''); // Clear old error
       getUsers();
     } catch (err) {
-      console.error('Add user failed:', err);
+      console.error('Add user failed:', err.message);
+      window.alert(`ERROR!!!: ${err.response?.data?.message || err.message}`);
     }
+
   };
 
   const handleSaveEdit = async (formData) => {

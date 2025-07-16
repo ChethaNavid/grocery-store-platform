@@ -110,7 +110,8 @@ const AddEditUser = ({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
+        <form onSubmit={handleSubmit} className="px-6 py-4 space-y-1">
+          <div className='grid grid-cols-2 gap-4'>
           {/* Username */}
           <div>
             <label className="block text-sm font-medium mb-1">Username</label>
@@ -136,7 +137,7 @@ const AddEditUser = ({
               className="w-full px-3 py-2 border rounded-lg"
             />
           </div>
-
+        </div>
           {/* Password (Add mode only) */}
           {mode === 'add' && (
             <div>
@@ -207,7 +208,7 @@ const AddEditUser = ({
           {/* Tables */}
           <div>
             <label className="block text-sm font-medium mb-1">Tables</label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {availableTables.map((table) => (
                 <label key={table} className="flex items-center space-x-2">
                   <input
