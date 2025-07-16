@@ -1,19 +1,33 @@
 import { sequelize } from "../models/index.js";
 
-// GET all MySQL users
+// GET all MySQL users with role (if you have a role table, join it here)
 const getAllUsers = async (req, res) => {
   try {
     const [results] = await sequelize.query(`
       SELECT 
-        User AS username,
-        Host,
-        account_locked,
-        password_expired
-      FROM mysql.user;
+        u.User AS username,
+        u.Host,
+        GROUP_CONCAT(DISTINCT tp.Table_name) AS tables,
+        GROUP_CONCAT(DISTINCT tp.Table_priv) AS table_privileges,
+        GROUP_CONCAT(DISTINCT CONCAT_WS(':', db.Db, 
+          CONCAT_WS(',', 
+            IF(db.Select_priv = 'Y', 'SELECT', NULL),
+            IF(db.Insert_priv = 'Y', 'INSERT', NULL),
+            IF(db.Update_priv = 'Y', 'UPDATE', NULL),
+            IF(db.Delete_priv = 'Y', 'DELETE', NULL),
+            IF(db.Create_priv = 'Y', 'CREATE', NULL),
+            IF(db.Drop_priv = 'Y', 'DROP', NULL)
+          )
+        )) AS database_privileges
+      FROM mysql.user u
+      LEFT JOIN mysql.tables_priv tp ON tp.User = u.User AND tp.Host = u.Host AND tp.Db = 'groceries_ecommerce'
+      LEFT JOIN mysql.db db ON db.User = u.User AND db.Host = u.Host AND db.Db = 'groceries_ecommerce'
+      WHERE tp.Db = 'groceries_ecommerce' OR db.Db = 'groceries_ecommerce'
+      GROUP BY u.User, u.Host;
     `);
 
     if (!results.length) {
-      return res.status(404).json({ error: true, message: "No MySQL users found." });
+      return res.status(404).json({ error: true, message: "No MySQL users found for the groceries_ecommerce database." });
     }
 
     res.status(200).json({ error: false, users: results });
@@ -25,79 +39,116 @@ const getAllUsers = async (req, res) => {
 
 // CREATE a new MySQL user
 const createUser = async (req, res) => {
-  const { username, password, host = '%', privileges = [], db = 'groceries_ecommerce.*' } = req.body;
+  const {
+    username,
+    password,
+    host = '%',
+    privileges = [],
+    db = 'groceries_ecommerce',
+    tables = [],
+  } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({ error: true, message: "Username and password are required." });
+  if (!username) {
+    return res.status(400).json({ error: true, message: "Username is required." });
   }
 
   try {
-    // Check if the user already exists
+    // 1. Check if user exists in MySQL
     const [userExists] = await sequelize.query(
-      `SELECT 1 FROM mysql.user WHERE User = ? AND Host = ?`,
-      { replacements: [username, host] }
+      `SELECT 1 FROM mysql.user WHERE User = ? AND Host = '%'`,
+      { replacements: [username] }
     );
 
     if (userExists.length > 0) {
-      return res.status(400).json({ error: true, message: "User already exists." });
+      return res.status(400).json({ error: true, message: "MySQL user already exists." });
     }
 
-    // 1. Create user
+    // 2. Create MySQL user
     await sequelize.query(
-      `CREATE USER \`${username}\`@\`${host}\` IDENTIFIED BY ?`, 
-      { replacements: [password] }
+      `CREATE USER ?@'%' IDENTIFIED BY ?`,
+      { replacements: [username, password] }
     );
 
-    // 2. Grant privileges if any
-    if (Array.isArray(privileges) && privileges.length > 0) {
+    // 3. Grant privileges for specified tables
+    if (
+      Array.isArray(privileges) &&
+      privileges.length > 0 &&
+      Array.isArray(tables) &&
+      tables.length > 0
+    ) {
       const privList = privileges.join(', ');
-      await sequelize.query(
-        `GRANT ${privList} ON \`${db}\`.* TO \`${username}\`@\`${host}\``
-      );
+      for (const table of tables) {
+        await sequelize.query(
+          `GRANT ${privList} ON ${db}.${table} TO ?@'%'`,
+          { replacements: [username] }
+        );
+      }
     }
 
-    // 3. Flush privileges
+    // 4. Flush privileges
     await sequelize.query(`FLUSH PRIVILEGES`);
 
-    res.status(201).json({ error: false, message: "MySQL user created and privileges assigned." });
+    res.status(201).json({ error: false, message: "User created successfully in MySQL and app database." });
   } catch (err) {
-    console.error("Error creating MySQL user:", err.message);
+    console.error("Error creating user:", err);
     res.status(500).json({
       error: true,
-      message: "Failed to create MySQL user.",
-      details: err.message
+      message: "Failed to create MySQL and app user.",
+      details: err.message,
     });
   }
 };
-  
 
-// UPDATE a MySQL user's password or host
+// PUT /database_admin/edit-user/:username - Edit an existing MySQL user
+// Updates password, privileges, and tables
 const editUser = async (req, res) => {
   const { username } = req.params;
-  const { newPassword, newHost = '%' } = req.body;
+  const { newPassword, privileges = [], db = 'groceries_ecommerce', tables = [] } = req.body;
 
   try {
-    if (newPassword) {
-      await sequelize.query(`ALTER USER ?@'%' IDENTIFIED BY ?`, {
-        replacements: [username, newPassword],
-      });
+    // 1. Update password if provided
+    if (newPassword && newPassword.trim()) {
+      await sequelize.query(
+        `ALTER USER \`${username}\`@'%' IDENTIFIED BY ?`,
+        { replacements: [newPassword.trim()] }
+      );
+      console.log(`Password updated for ${username}@%`);
     }
 
-    if (newHost !== '%') {
-      // Create new host user if changing host
-      await sequelize.query(`CREATE USER ?@? IDENTIFIED BY ?`, {
-        replacements: [username, newHost, newPassword || 'defaultPassword'],
-      });
+    // 2. Revoke all privileges
+    await sequelize.query(
+      `REVOKE ALL PRIVILEGES, GRANT OPTION FROM \`${username}\`@'%'`
+    );
+    console.log(`Privileges revoked from ${username}@%`);
 
-      // Drop old host user
-      await sequelize.query(`DROP USER ?@'%'`, { replacements: [username] });
+    // 3. Grant privileges
+    if (
+      Array.isArray(privileges) && privileges.length > 0 &&
+      Array.isArray(tables) && tables.length > 0
+    ) {
+      const privList = privileges.join(', ');
+      for (const table of tables) {
+        if (typeof table === 'string' && table.trim()) {
+          const safeTable = table.trim().replace(/`/g, '');
+          await sequelize.query(
+            `GRANT ${privList} ON \`${db}\`.\`${safeTable}\` TO \`${username}\`@'%'`
+          );
+        } else {
+          console.warn("Skipped invalid table:", table);
+        }
+      }
     }
 
-    await sequelize.query(`FLUSH PRIVILEGES;`);
-    res.status(200).json({ error: false, message: "MySQL user updated." });
+    await sequelize.query(`FLUSH PRIVILEGES`);
+    return res.status(200).json({ error: false, message: "User updated successfully." });
+
   } catch (err) {
-    console.error("Error updating MySQL user:", err);
-    res.status(500).json({ error: true, message: "Failed to update user." });
+    console.error("Error updating user:", err);
+    return res.status(500).json({
+      error: true,
+      message: "Failed to update user.",
+      details: err.message,
+    });
   }
 };
 
@@ -117,11 +168,12 @@ const deleteUser = async (req, res) => {
     }
 
     // Drop user if it exists
-    await sequelize.query(`DROP USER IF EXISTS ?@'%'`, {
-      replacements: [username],
-    });
+    await sequelize.query(
+      `DROP USER IF EXISTS ?@'%'`,
+      { replacements: [username] }
+    );
 
-    await sequelize.query(`FLUSH PRIVILEGES;`);
+    await sequelize.query(`FLUSH PRIVILEGES`);
 
     res.status(200).json({ message: "MySQL user deleted successfully." });
   } catch (err) {
@@ -134,4 +186,26 @@ const deleteUser = async (req, res) => {
   }
 };
 
-export { getAllUsers, createUser, editUser, deleteUser };
+// GET /database_admin/privileges_and_tables - Fetch all tables in the database
+const getPrivilegesAndTables = async (req, res) => {
+  try {
+    const [results] = await sequelize.query(
+      `SELECT TABLE_NAME 
+       FROM INFORMATION_SCHEMA.TABLES 
+       WHERE TABLE_SCHEMA = ?`,
+      { replacements: [sequelize.config.database] }
+    );
+
+    const tables = results.map(row => row.TABLE_NAME);
+
+    res.json({
+      availableTables: tables,
+      availablePrivileges: ["SELECT", "INSERT", "UPDATE", "DELETE", "CREATE", "DROP"]
+    });
+  } catch (err) {
+    console.error('Error in getPrivilegesAndTables:', err);
+    res.status(500).json({ message: 'Failed to fetch privileges/tables', error: err.message });
+  }
+};
+
+export { getAllUsers, createUser, editUser, deleteUser, getPrivilegesAndTables };

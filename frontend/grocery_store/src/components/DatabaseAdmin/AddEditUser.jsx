@@ -1,66 +1,95 @@
 import React, { useState, useEffect } from 'react';
 import { MdClose } from 'react-icons/md';
+import axiosInstance from '../../utils/axiosInstance'; // Adjust path as needed
 
-const AddEditUser = ({ mode = 'add', user = {}, onClose, onSubmit }) => {
-  const availablePrivileges = [
-    "SELECT", "INSERT", "UPDATE", "DELETE", "CREATE", "DROP"
-  ];
+const AddEditUser = ({
+  mode = 'add',
+  user = {},
+  onClose,
+  onSubmit,
+}) => {
+  const [availablePrivileges, setAvailablePrivileges] = useState([]);
+  const [availableTables, setAvailableTables] = useState([]);
 
   const [formData, setFormData] = useState({
     username: '',
     phoneNumber: '',
     password: '',
-    privileges: [], // array of selected privileges
+    privileges: [],
+    tables: [],
   });
 
+  // Load privileges and tables from backend
+  useEffect(() => {
+    const fetchPrivilegesAndTables = async () => {
+      try {
+        const res = await axiosInstance.get('/database_admin/privileges_and_tables');
+        setAvailablePrivileges(res.data.availablePrivileges || []);
+        setAvailableTables(res.data.availableTables || []);
+      } catch (err) {
+        console.error('Failed to fetch privileges and tables:', err);
+      }
+    };
+    fetchPrivilegesAndTables();
+  }, []);
+
+  // Populate form when editing a user
   useEffect(() => {
     if (mode === 'edit' && user) {
       setFormData({
         username: user.username || '',
         phoneNumber: user.phoneNumber || '',
-        password: '', // Don't pre-fill the password
+        password: '',
         privileges: user.privileges || [],
+        tables: user.tables || [],
+      });
+    } else {
+      setFormData({
+        username: '',
+        phoneNumber: '',
+        password: '',
+        privileges: [],
+        tables: [],
       });
     }
   }, [mode, user]);
 
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const toggleCheckbox = (type, value) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'file' ? e.target.files[0] : value,
+      [type]: prev[type].includes(value)
+        ? prev[type].filter((v) => v !== value)
+        : [...prev[type], value],
     }));
   };
 
-  const handlePrivilegeChange = (priv) => {
-    setFormData((prev) => {
-      const current = prev.privileges || [];
-      return {
-        ...prev,
-        privileges: current.includes(priv)
-          ? current.filter((p) => p !== priv)
-          : [...current, priv],
-      };
-    });
+const handleSubmit = (e) => {
+  e.preventDefault();
+
+  const payload = {
+    privileges: formData.privileges,
+    tables: formData.tables,
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    const payload = new FormData();
-    payload.append('username', formData.username);
-    payload.append('phoneNumber', formData.phoneNumber);
-    if (formData.password) payload.append('password', formData.password);
-
-    // Add privileges as a JSON array to the form data
-    payload.append('privileges', JSON.stringify(formData.privileges));
-
-    if (mode === 'edit' && user.id) {
-      payload.append('id', user.id);
+  if (mode === 'add') {
+    payload.username = formData.username;
+    payload.phoneNumber = formData.phoneNumber;
+    payload.password = formData.password; // required in add mode
+  } else if (mode === 'edit') {
+    // Only send newPassword if not empty
+    if (formData.password.trim()) {
+      payload.newPassword = formData.password.trim();
     }
+  }
 
-    onSubmit(payload);
-  };
+  onSubmit(payload);
+};
+
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
@@ -79,40 +108,37 @@ const AddEditUser = ({ mode = 'add', user = {}, onClose, onSubmit }) => {
         <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
           {/* Username */}
           <div>
-            <label htmlFor="username" className="block text-sm font-medium mb-1">Username</label>
+            <label className="block text-sm font-medium mb-1">Username</label>
             <input
               type="text"
-              id="username"
               name="username"
               value={formData.username}
               onChange={handleChange}
               required
+              disabled={mode === 'edit'}
               className="w-full px-3 py-2 border rounded-lg"
             />
           </div>
 
           {/* Phone Number */}
           <div>
-            <label htmlFor="phoneNumber" className="block text-sm font-medium mb-1">Phone Number</label>
+            <label className="block text-sm font-medium mb-1">Phone Number</label>
             <input
               type="text"
-              id="phoneNumber"
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
-              required
               className="w-full px-3 py-2 border rounded-lg"
             />
           </div>
 
           {/* Password */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium mb-1">
-              Password {mode === 'edit' && '(leave blank to keep current password)'}
+            <label className="block text-sm font-medium mb-1">
+              Password {mode === 'edit' && '(leave blank to keep current)'}
             </label>
             <input
               type="password"
-              id="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
@@ -125,16 +151,34 @@ const AddEditUser = ({ mode = 'add', user = {}, onClose, onSubmit }) => {
           {/* Privileges */}
           <div>
             <label className="block text-sm font-medium mb-1">MySQL Privileges</label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {availablePrivileges.map((priv) => (
                 <label key={priv} className="flex items-center space-x-2">
                   <input
                     type="checkbox"
                     checked={formData.privileges.includes(priv)}
-                    onChange={() => handlePrivilegeChange(priv)}
+                    onChange={() => toggleCheckbox('privileges', priv)}
                     className="form-checkbox"
                   />
                   <span>{priv}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Tables */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Tables</label>
+            <div className="grid grid-cols-2 gap-2">
+              {availableTables.map((table) => (
+                <label key={table} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.tables.includes(table)}
+                    onChange={() => toggleCheckbox('tables', table)}
+                    className="form-checkbox"
+                  />
+                  <span>{table}</span>
                 </label>
               ))}
             </div>
