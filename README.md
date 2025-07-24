@@ -76,6 +76,7 @@ cd grocery-ecommerce
 ```
 # Backend
 cd backend
+cd src
 npm install
 
 # Frontend
@@ -103,6 +104,7 @@ S3_BUCKET_NAME=your_s3_bucket_name
 ```
 # Start the backend server
 cd backend
+cd src
 npm run dev
 
 # Start the frontend app
