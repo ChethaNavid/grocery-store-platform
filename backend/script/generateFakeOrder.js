@@ -1,6 +1,6 @@
 // scripts/generateFakeOrder.js
 import { faker } from '@faker-js/faker';
-import { Order, Product, sequelize } from '../models/index.js';
+import { Order, Product, sequelize, User } from '../models/index.js';
 
 const generateFakeOrders = async () => {
   try {
@@ -9,6 +9,11 @@ const generateFakeOrders = async () => {
 
     // Step 1: Fetch all products with price
     const products = await Product.findAll({ attributes: ['id', 'price'] });
+
+    const users = await User.findAll({ attributes: ['id'] }); 
+    const userIds = users.map(user => user.id); 
+
+    const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
 
     if (products.length === 0) {
       console.log('❌ No products found. Cannot generate orders.');
@@ -30,7 +35,7 @@ const generateFakeOrders = async () => {
       const status = faker.helpers.arrayElement(['pending', 'delivered', 'cancelled']);
       const address = faker.location.city();
       const orderDate = new Date();
-      const userId = faker.number.int({ min: 1, max: 1000 }); // adjust based on your actual user IDs
+      const userId = randomUserId; // adjust based on your actual user IDs
 
       // Step 5: Push to array
       fakeOrders.push({
