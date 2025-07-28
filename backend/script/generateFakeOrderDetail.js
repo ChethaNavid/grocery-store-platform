@@ -1,8 +1,8 @@
 import { faker } from '@faker-js/faker';
 import { OrderDetail, Product, Order, sequelize } from '../models/index.js';
 
-const BATCH_SIZE = 10000;
-const TOTAL_RECORDS = 1_000_000;
+const BATCH_SIZE = 1000;
+const TOTAL_RECORDS = 100_000; // 100 thousand records
 
 const generateFakeOrderDetails = async () => {
   try {

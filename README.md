@@ -42,12 +42,15 @@
 ## Project Structure
 ```
 grocery-store-platform/
-├── client/ # React frontend
-├── server/ # Node.js backend
+├── frontend/ 
+| ├──rocery_store/# React frontend
+├── backend/ # Node.js backend
 │ ├── models/ # Sequelize models
 │ ├── routes/ # API routes
 │ ├── controllers/ # Business logic
-│ └── utils/ # Middleware and helpers
+| ├── middleware/ # Middleware and helpers
+| ├── database/ # use sequelize for connecting to database
+│ └── src/ #server 
 ```
 
 ---
@@ -65,31 +68,33 @@ grocery-store-platform/
 ### Clone the Repository
 
 ```
-[git clone https://github.com/your-username/grocery-ecommerce.git](https://github.com/ChethaNavid/grocery-store-platform.git)
+git clone https://github.com/ChethaNavid/grocery-store-platform.git
 cd grocery-ecommerce
 
 ```
 ### Install Dependencies
 ```
 # Backend
-cd server
+cd backend
+cd src
 npm install
 
 # Frontend
-cd ../grocery_store
+cd frontend
+cd grocery_store
 npm install
 ```
 
 ### 3️⃣ Configure Environment Variables
 
-Create a `.env` file inside the `server/` directory with the following content:
+Create a `.env` file inside the `backend/` directory with the following content:
 
 ```
 PORT=5000
 DB_HOST=localhost
 DB_USER=root
-DB_PASSWORD=yourpassword
-DB_NAME=grocerydb
+DB_PASSWORD=yourdbpassword
+DB_NAME=groceries_ecommerce
 JWT_SECRET=your_jwt_secret
 AWS_ACCESS_KEY_ID=your_aws_access_key
 AWS_SECRET_ACCESS_KEY=your_aws_secret_key
@@ -98,20 +103,22 @@ S3_BUCKET_NAME=your_s3_bucket_name
 ### Run the Application
 ```
 # Start the backend server
-cd server
+cd backend
+cd src
 npm run dev
 
 # Start the frontend app
-cd ../grocery_store
+cd frontend
+cd grocery_store
 npm run dev
 ```
 ## Contributing
 Contributions are welcome and appreciated!
 To contribute:
 1. Fork the repository
-2. Create a new branch: git checkout -b feature/your-feature-name
+2. Create a new branch: `git checkout -b feature/your-feature-name`
 3. Make your changes
-3. Commit and push: **git commit -m "Add feature" then git push origin your-branch
+3. Commit and push: `git commit -m "Add feature"` then `git push origin your-branch`
 4. Open a pull request
 ## License
 This project is licensed under the MIT License.
