@@ -4,34 +4,34 @@
 
 ---
 
-## 🚀 Features
+## Features
 
-### 👤 User Authentication
+### User Authentication
 - Secure login and signup for both **customers** and **admins**
 - Session management with **role-based access control**
 
-### 🛍️ Product Catalog
+### Product Catalog
 - Browse a wide selection of grocery items
 - Search and filter by **name**, **category**, or **availability**
 - View product details including images, prices, and stock status
 
-### 🛒 Shopping Cart & Checkout
+### Shopping Cart & Checkout
 - Add items to cart and adjust quantities
 - View live cart totals
 - Secure **online payment** integration
 
-### 🧑‍💼 Admin Dashboard & Inventory Management
+### Admin Dashboard & Inventory Management
 - Perform **CRUD operations** on products
 - Manage pricing, stock levels, and categories
 - Upload product images (Amazon S3 integration)
 
-### 📦 Stock Availability Checker
+### Stock Availability Checker
 - Real-time display of **in-stock / out-of-stock** items
 - Automatically syncs with inventory updates
 
 ---
 
-## 🧑‍💻 Tech Stack
+## Tech Stack
 
 | Frontend   | Backend   | Database  | File Storage | Other Tools             |
 |------------|-----------|-----------|--------------|--------------------------|
@@ -39,7 +39,7 @@
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 ```
 grocery-store-platform/
 ├── client/ # React frontend
@@ -52,9 +52,9 @@ grocery-store-platform/
 
 ---
 
-## ⚙️ Setup Instructions
+## Setup Instructions
 
-### ✅ Prerequisites
+### Prerequisites
 
 - Node.js v16+
 - MySQL database
@@ -62,21 +62,21 @@ grocery-store-platform/
 
 ---
 
-### 1️⃣ Clone the Repository
+### Clone the Repository
 
 ```
 [git clone https://github.com/your-username/grocery-ecommerce.git](https://github.com/ChethaNavid/grocery-store-platform.git)
 cd grocery-ecommerce
 
 ```
-### 2️⃣ Install Dependencies
+### Install Dependencies
 ```
 # Backend
 cd server
 npm install
 
 # Frontend
-cd ../client
+cd ../grocery_store
 npm install
 ```
 
@@ -95,17 +95,17 @@ AWS_ACCESS_KEY_ID=your_aws_access_key
 AWS_SECRET_ACCESS_KEY=your_aws_secret_key
 S3_BUCKET_NAME=your_s3_bucket_name
 ```
-### 4️⃣ Run the Application
+### Run the Application
 ```
 # Start the backend server
 cd server
 npm run dev
 
 # Start the frontend app
-cd ../client
+cd ../grocery_store
 npm run dev
 ```
-## 🙌 Contributing
+## Contributing
 Contributions are welcome and appreciated!
 To contribute:
 1. Fork the repository
@@ -113,5 +113,5 @@ To contribute:
 3. Make your changes
 3. Commit and push: **git commit -m "Add feature" then git push origin your-branch
 4. Open a pull request
-## 📄 License
+## License
 This project is licensed under the MIT License.

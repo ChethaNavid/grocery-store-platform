@@ -20,7 +20,7 @@ app.use(cors({
 }))
 
 try {
-  const result = await sequelize.sync({alter:true})
+  const result = await sequelize.sync()
   console.log(result);
 } catch (error) {
   console.error('Unable to connect to the database:', error);
