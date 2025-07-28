@@ -1,4 +1,4 @@
-# 🛒 Grocery Store Platform
+# Grocery Store Platform
 
 **Grocery E-Commerce Platform** is a full-stack web application designed to enhance the grocery shopping experience. It allows customers to order fresh groceries online — anytime, anywhere — with secure payments and doorstep delivery. Store administrators can manage inventory and product listings efficiently via an intuitive admin dashboard.
 
