@@ -5,6 +5,34 @@ import { Role } from '../models/role.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
+// GET /users
+const getAllUser = async (req, res) => {
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    try {
+        const total = await User.count();
+        const totalPage = Math.ceil(total / limit);
+
+        const users = await User.findAll({
+            limit: limit, offset: (page - 1) * limit
+        });
+
+        return res.status(200).json({
+            error: false,
+            meta: {
+                totalItems: total,
+                page: page,
+                totalPage: totalPage,
+            },
+            users,
+            message: "Users retrieved successfully"
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: true, message: error.message })
+    }
+}
+
 // POST /create-account
 const createNewAccount = async(req, res) => {
 
@@ -130,4 +158,4 @@ const getUser = async (req, res) => {
     })
 }
 
-export {createNewAccount, login, getUser};
+export {getAllUser, createNewAccount, login, getUser};

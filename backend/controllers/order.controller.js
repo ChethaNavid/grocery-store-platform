@@ -3,6 +3,35 @@ import { OrderDetail } from "../models/orderDetail.js";
 import { Payment } from "../models/payment.js";
 import { v4 as uuidv4 } from 'uuid';
 
+// GET /orders
+export const getAllOrder = async (req, res) => {
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+
+    try {
+        const total = await Order.count();
+        const totalPage = Math.ceil(total / limit);
+
+        const orders = await Order.findAll({
+            limit: limit, offset: (page - 1) * limit
+        })
+
+        return res.status(200).json({
+            error: false,
+            meta:{
+                totalItems: total,
+                page: page,
+                totalPage: totalPage
+            },
+            orders,
+            message: "Orders retrieved successfullly"
+        })
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: true, message: error.message })
+    }
+}
+
 // POST/create-order
 export const createOrder = async (req, res) => {
     const { totalAmount, totalPrice } = req.body;

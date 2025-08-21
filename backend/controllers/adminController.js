@@ -19,12 +19,25 @@ const s3 = new S3Client({
 
 // GET/admin/product
 const getAllProduct = async (req, res) => {
+  const limit = parseInt(req.query.limit) || 10;
+  const page = parseInt(req.query.page) || 1;
+  const category = req.query.category;
+
+    const categoryInclude = {
+      model: Category,
+      attributes: ['name'],
+      ...(category && { where: { name: category } }),
+    };
+
   try {
+    const total = await Product.count({
+      include: [categoryInclude]
+    });
+    const totalPage = Math.ceil(total / limit);
+
     const products = await Product.findAll({
-      include: {
-        model: Category,
-        attributes: ['name'],
-      },
+      limit: limit, offset: (page - 1) * limit,
+      include: [categoryInclude]
     });
 
     if (!products || products.length === 0) {
@@ -60,6 +73,11 @@ const getAllProduct = async (req, res) => {
 
     return res.status(200).json({
       error: false,
+      meta: {
+        totalItem: total,
+        page: page,
+        totalPage: totalPage 
+      },
       products: enrichedProducts,
       message: "Products fetched successfully."
     });
