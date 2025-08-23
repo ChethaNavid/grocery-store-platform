@@ -11,6 +11,11 @@ import Payment from "./components/Payment/Payment";
 import { CartProvider } from "./context/CartContext";
 import { UserProvider } from "./context/UserContext";
 import OrderSuccess from "./components/Payment/OrderSuccess";
+import DashboardLayout from "./components/Admin/DashboardLayout";
+import Product from "./components/Admin/Pages/Product";
+import Customer from "./components/Admin/Pages/Customer";
+import Order from "./components/Admin/Pages/Order";
+import { AdminPageProvide } from "./context/AdminPageContext";
 
 function App() {
 
@@ -20,16 +25,26 @@ function App() {
         <CartProvider>
           <Routes>
             <Route path="/" element={<Home />} />
+
             <Route path="/admin" element={
               <ProtectedRoute requiredRole="admin">
-                <AdminHome />
+                <AdminPageProvide>
+                  <DashboardLayout />
+                </AdminPageProvide>
               </ProtectedRoute>
-            } />
+            }>
+              <Route index element={<AdminHome />} />
+              <Route path="products" element={<Product />} />
+              <Route path="customers" element={<Customer />} />
+              <Route path="orders" element={<Order />} />
+            </Route>
+
             <Route path="/database_admin/users" element={
               <ProtectedRoute requiredRole="database_admin">
                 <AdminUserPage />
               </ProtectedRoute>
             } />
+
             <Route path="/admin/:categoryName" element={<AdminHome />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />

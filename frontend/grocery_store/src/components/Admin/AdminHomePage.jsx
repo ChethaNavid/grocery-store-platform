@@ -3,10 +3,12 @@ import { useParams } from "react-router-dom";
 import axiosInstance from '../../utils/axiosInstance';
 import NavBarAdmin from '../../components/Admin/NavBarAdmin';
 import ProductCardAdmin from './ProductCardAdmin';
-import CategoriesNavbarAdmin from '../../components/Admin/CategoriesNavBarAdmin';
 import AddEditProduct from './AddEditProduct';
 import ConfirmModal from './ConfrimModal';
 import ToastMessage from '../ToastMessage/ToastMessage';
+import Sidebar from './Sidebar';
+import CustomerTable from './DataTable/CustomerTable';
+import CategoriesNavbar from '../../components/Admin/CategoriesNavBarAdmin';
 
 const AdminHome = () => {
   const { categoryName } = useParams();
@@ -72,8 +74,8 @@ const AdminHome = () => {
 
   // Clear Search
   const handleClearSearch = () => {
-      setIsSearch(false);
-      getProduct();
+    setIsSearch(false);
+    getProduct();
   }
 
   // Open Add Modal
@@ -128,11 +130,20 @@ const AdminHome = () => {
   }, [categoryName]);
 
   return (
-    <div className="pt-[150px]">
-      <NavBarAdmin handleAddProduct={handleAddProduct} />
-      <CategoriesNavbarAdmin onSearch={searchProduct} handleClearSearch={handleClearSearch}/>
+    <div className="pt-[76px]">
+      <NavBarAdmin />
+      <div>
+        <Sidebar />
+        <main className='pl-52'>
+          <CategoriesNavbar onSearch={searchProduct} handleClearSearch={handleClearSearch} handleAddProduct={handleAddProduct}/>
+          
+          <div className='p-4'>
+            <CustomerTable />
+          </div>
+        </main>
+      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 px-5 pb-8">
+      {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 px-5 pb-8">
         {allProduct.map((item) => (
           <ProductCardAdmin
             key={item.id}
@@ -180,7 +191,7 @@ const AdminHome = () => {
         type={showToastMsg.type}
         message={showToastMsg.message}
         onClose={handleCloseToast}
-      />
+      /> */}
 
     </div>
   );
