@@ -1,27 +1,29 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import SearchBarAdmin from '../Admin/SearchBarAdmin';
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { MdAdd } from "react-icons/md";
 
-const CategoriesNavbar = ({ onSearch, handleClearSearch }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const selectedValue = useMemo(() => {
-    const path = location.pathname;
-    if (path === "/admin") return "admin";
-    return path.replace("/", "");
-  }, [location.pathname]);
-
-  const handleChange = (e) => {
-    const selectedCategory = e.target.value;
-    if (selectedCategory === 'admin') {
-      navigate('/admin');
-    } else {
-      navigate(`/${selectedCategory}`);
-    }
+const CategoriesNavbar = ({ onSearch, handleClearSearch, handleAdd, addButtonLabel, onFilterCategory }) => {
+  
+  const pathToTitle = {
+    "/admin": "Dashboard",
+    "/admin/customers": "Customers",
+    "/admin/products": "Products",
+    "/admin/orders": "Orders",
   };
 
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  const title = pathToTitle[currentPath] || "Dashboard";
+
+  const showAddButton = currentPath === "/admin/products";
+  const showFilter = currentPath === "/admin/products";
+
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedCategory = searchParams.get("category") || "";
+
 
   const handleSearch = () => {
     if(searchQuery) {
@@ -34,36 +36,66 @@ const CategoriesNavbar = ({ onSearch, handleClearSearch }) => {
     handleClearSearch();
   }
 
+  const handleCategoryChange = (e) => {
+    const value = e.target.value;
+
+    const newParams = new URLSearchParams(searchParams.toString());
+    if (value) {
+      newParams.set("category", value);
+      newParams.set("page", 1); // Reset to first page on filter change
+    } else {
+      newParams.delete("category");
+      newParams.set("page", 1);
+    }
+
+    setSearchParams(newParams);
+    onFilterCategory(value);
+  };
+
   return (
-    <nav className="fixed top-[69px] w-full left-0 z-40 text-sm text-slate-600 flex justify-between gap-[10px] bg-white px-2.5 py-3.5">
-      <div className="w-full max-w-2xl mx-5">
-        <SearchBarAdmin value={searchQuery}
-          onChange={({target}) => {
-            setSearchQuery(target.value);
-          }}
-          handleSearch={handleSearch}
-          onClearSearch={onClearSearch}
-        />
+    <>
+      <div className='flex justify-between mx-4 mt-4'>
+        <h1 className='text-2xl font-semibold'>{title}</h1>
+
+        {showAddButton && (
+          <button className='flex items-center gap-1 primary-btn text-sm' onClick={handleAdd}>
+            <MdAdd size={18}/>
+            {addButtonLabel}
+          </button>
+        )}
       </div>
-      <div className="flex items-center pr-10 gap-4">
-        <p className="text-sm text-gray-800 ">Category: </p>
-        <select
-          onChange={handleChange}
-          value={selectedValue}
-          className="text-sm font-semibold border bg-[#D9D9D9] rounded-lg p-2 w-full max-w-xs px-4 py-2 border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-        >
-          <option value="admin">All Category</option>
-          <option value="admin/fruits">Fruit</option>
-          <option value="admin/vegetables">Vegetables</option>
-          <option value="admin/dairy">Dairy</option>
-          <option value="admin/meat">Meat</option>
-          <option value="admin/bakery">Bakery</option>
-          <option value="admin/beverages">Beverages</option>
-          <option value="admin/snacks">Snacks</option>
-          <option value="admin/frozen">Frozen</option>
-        </select>
-      </div>
-    </nav>
+
+      <nav className="flex items-center justify-between gap-4 bg-white p-4 border-b border-gray-200">
+        <div className="flex-grow">
+          <SearchBarAdmin value={searchQuery}
+            onChange={({target}) => {
+              setSearchQuery(target.value);
+            }}
+            handleSearch={handleSearch}
+            onClearSearch={onClearSearch}
+          />
+        </div>
+
+        {showFilter && (
+          <div className="flex items-center gap-4">
+            <select
+              onChange={handleCategoryChange}
+              value={selectedCategory}
+              className="text-sm font-medium border bg-[#fcfbfb] rounded-lg p-1 w-full max-w-xs px-4 py-2 border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+            >
+                <option value="">All</option>
+                <option value="fruits">Fruits</option>
+                <option value="vegetables">Vegetables</option>
+                <option value="dairy">Dairy</option>
+                <option value="meat">Meat</option>
+                <option value="bakery">Bakery</option>
+                <option value="beverages">Beverages</option>
+                <option value="snacks">Snacks</option>
+            </select>
+          </div>
+        )}
+      </nav>
+    </>
   );
 };
 
