@@ -85,7 +85,7 @@ cd grocery_store
 npm install
 ```
 
-### 3️⃣ Configure Environment Variables
+### Configure Environment Variables
 
 Create a `.env` file inside the `backend/` directory with the following content:
 
