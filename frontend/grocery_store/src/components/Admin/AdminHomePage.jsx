@@ -1,200 +1,63 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axiosInstance from '../../utils/axiosInstance';
-import NavBarAdmin from '../../components/Admin/NavBarAdmin';
-import ProductCardAdmin from './ProductCardAdmin';
-import AddEditProduct from './AddEditProduct';
-import ConfirmModal from './ConfrimModal';
-import ToastMessage from '../ToastMessage/ToastMessage';
-import Sidebar from './Sidebar';
-import CustomerTable from './DataTable/CustomerTable';
-import CategoriesNavbar from '../../components/Admin/CategoriesNavBarAdmin';
 
 const AdminHome = () => {
-  const { categoryName } = useParams();
-  const [allProduct, setAllProduct] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState('add'); // or 'edit'
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [productToDelete, setProductToDelete] = useState(null);
-  const [isSearch, setIsSearch] = useState(false);
-
-  const [showToastMsg, setShowToastMsg] = useState({
-    isShown: false,
-    type:"add",
-    message: "",
+  const [summary, setSummary] = useState({
+    products: 0,
+    customers: 0,
+    orders: 0,
   });
 
-  const showToastMessage = (message, type) => {
-    setShowToastMsg({
-      isShown: true,
-      message,
-      type,
-    })
-  };
-
-  const handleCloseToast = () => {
-    setShowToastMsg({
-      isShown: false,
-      message: "",
-      type: "",
-    })
-  };
-
-  // Fetch products
-  const getProduct = async () => {
+  // Fetch dashboard summary counts
+  const fetchCounts = async () => {
     try {
-      const response = categoryName 
-        ? await axiosInstance.get(`/category/${categoryName}`)
-        : await axiosInstance.get('/admin/products');
+      const [productsRes, customersRes, ordersRes] = await Promise.all([
+        axiosInstance.get('/admin/products?page=1'),
+        axiosInstance.get('/users?page=1'),
+        axiosInstance.get('/orders?page=1'),
+      ]);
 
-      if (response.data?.products) {
-        setAllProduct(response.data.products);
-      }
-    } catch (error) {
-      console.log("Unexpected error occurred.");
-    }
-  };
-  
-  // Search Product
-  const searchProduct = async (query) => {
-    try {
-      const response = await axiosInstance.get('/search-product', {
-        params: { query }
+      setSummary({
+        products: productsRes.data.meta.totalItem || 0,
+        customers: customersRes.data.meta.totalItems || 0,
+        orders: ordersRes.data.meta.totalItems || 0,
       });
-      if (response.data && response.data.products) {
-        setAllProduct(response.data.products);
-        setIsSearch(true);
-      }
-    } catch (error) {
-      console.log("Search failed", error);
-    }
-  };
-
-  // Clear Search
-  const handleClearSearch = () => {
-    setIsSearch(false);
-    getProduct();
-  }
-
-  // Open Add Modal
-  const handleAddProduct = () => {
-    setSelectedProduct(null);
-    setModalMode('add');
-    setShowModal(true);
-  };
-
-  // Open Edit Modal
-  const handleEditProduct = (product) => {
-    setSelectedProduct(product);
-    setModalMode('edit');
-    setShowModal(true);
-  };
-
-  // Submit Handler for Add/Edit
-  const handleSubmit = async (formData) => {
-    try {
-      if (modalMode === 'add') {
-        await axiosInstance.post('/admin/add-product', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        showToastMessage("Product Added Successfully", "success");
-      } else if (modalMode === 'edit' && selectedProduct?.id) {
-        await axiosInstance.put(`/admin/edit-product/${selectedProduct.id}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        showToastMessage("Product Updated Successfully", "success");
-      }
-
-      setShowModal(false);
-      getProduct();
-    } catch (error) {
-      console.error("Failed to save product", error);
-    }
-  };
-
-  // Delete
-  const handleDelete = async (data) => {
-    try {
-      await axiosInstance.delete(`/admin/delete-product/${data.id}`);
-      showToastMessage("Product Deleted Successfully", "delete");
-      getProduct();
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error("Failed to fetch dashboard summary:", err);
     }
   };
 
   useEffect(() => {
-    getProduct();
-  }, [categoryName]);
+    fetchCounts();
+  }, []);
 
   return (
-    <div className="pt-[76px]">
-      <NavBarAdmin />
-      <div>
-        <Sidebar />
-        <main className='pl-52'>
-          <CategoriesNavbar onSearch={searchProduct} handleClearSearch={handleClearSearch} handleAddProduct={handleAddProduct}/>
-          
-          <div className='p-4'>
-            <CustomerTable />
-          </div>
-        </main>
+    <div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <SummaryCard title="Products" count={summary.products} />
+        <SummaryCard title="Customers" count={summary.customers} />
+        <SummaryCard title="Orders" count={summary.orders} />
       </div>
-
-      {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 px-5 pb-8">
-        {allProduct.map((item) => (
-          <ProductCardAdmin
-            key={item.id}
-            imgURL={item.imageUrl}
-            category={item.Category?.name}
-            productName={item.name}
-            price={`$${item.price}`}
-            inStock={item.inStock}
-            onEdit={() => handleEditProduct(item)}
-            onDelete={() => {
-              setProductToDelete(item);
-              setShowConfirmModal(true);
-            }}
-          />
-        ))}
-      </div>
-
-      {showModal && (
-        <AddEditProduct
-          mode={modalMode}
-          product={selectedProduct}
-          onClose={() => setShowModal(false)}
-          onSubmit={handleSubmit}
-        />
-      )}
-
-      {showConfirmModal && productToDelete && (
-        <ConfirmModal
-          title="Delete Product"
-          message={<>Are you sure you want to delete <strong>{productToDelete.name}</strong>?</>}
-          onCancel={() => {
-            setShowConfirmModal(false);
-            setProductToDelete(null);
-          }}
-          onConfirm={() => {
-            handleDelete(productToDelete);
-            setShowConfirmModal(false);
-            setProductToDelete(null);
-          }}
-        />
-      )}
-
-      <ToastMessage 
-        isShown={showToastMsg.isShown}
-        type={showToastMsg.type}
-        message={showToastMsg.message}
-        onClose={handleCloseToast}
-      /> */}
-
     </div>
   );
 };
+
+function SummaryCard({ title, count, href }) {
+  const CardContent = (
+    <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg hover:bg-gray-50 transition-all duration-200">
+      <h2 className="text-xl font-semibold text-gray-700 mb-2">{title}</h2>
+      <p className="text-3xl font-bold text-green-500">{count}</p>
+    </div>
+  );
+
+  return href ? (
+    <Link to={href}>
+      {CardContent}
+    </Link>
+  ) : (
+    CardContent
+  );
+}
 
 export default AdminHome;

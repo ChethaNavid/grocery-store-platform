@@ -17,7 +17,6 @@ const Product = () => {
     const [meta, setMeta] = useState({ page:1, totalPage: 1 });
     const [searchParams, setSearchParams] = useSearchParams({
         page: 1,
-        limit: 10,
         category: ""
     });
     const [showModal, setShowModal] = useState(false);
@@ -32,7 +31,6 @@ const Product = () => {
         setFilteredCategory(category);
         const newParams = {
             page: 1,
-            limit: 10,
         };
 
         if (category) {
@@ -73,10 +71,9 @@ const Product = () => {
     // Fetch products
     const getProduct = async () => {
         const page = searchParams.get("page") || 1;
-        const limit = searchParams.get("limit") || 10;
         const selectedCategory = searchParams.get("category") || "";
 
-        let url = `/admin/products?page=${page}&limit=${limit}`;
+        let url = `/admin/products?page=${page}`;
         if (selectedCategory) {
             url += `&category=${selectedCategory}`;
         }
@@ -196,7 +193,7 @@ const Product = () => {
                    <button
                         disabled={meta.page <= 1}
                         onClick={() =>
-                            setSearchParams({ page: Number(meta.page) - 1, limit: 10 })
+                            setSearchParams({ page: Number(meta.page) - 1 })
                         }
                         className="text-gray-500 hover:text-black rounded-md border border-gray-300 py-1 px-3 hover:bg-gray-200 disabled:opacity-50"
                     >
@@ -205,7 +202,7 @@ const Product = () => {
                     <button
                         disabled={meta.page >= meta.totalPage}
                         onClick={() =>
-                            setSearchParams({ page: Number(meta.page) + 1, limit: 10 })
+                            setSearchParams({ page: Number(meta.page) + 1 })
                         }
                         className="text-gray-500 hover:text-black rounded-md border border-gray-300 py-1 px-3 hover:bg-gray-200 disabled:opacity-50"
                     >

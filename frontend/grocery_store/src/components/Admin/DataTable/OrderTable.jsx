@@ -15,11 +15,11 @@ const OrderTable = ({ orders }) => {
             {orders?.map((items) => {
               return (
                 <tr key={items.id} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-2">{items.id}</td>
-                  <td className="px-4 py-2">{items.totalAmount}</td>
-                  <td className="px-4 py-2">{items.totalPrice}</td>
-                  <td className="px-4 py-2">{items.userId}</td>
-                  <td className="px-4 py-2">{new Date(items.orderDate).toLocaleString()}</td>
+                  <td className="px-4 py-4">{items.id}</td>
+                  <td className="px-4 py-4">{items.totalAmount}</td>
+                  <td className="px-4 py-4">{items.totalPrice}</td>
+                  <td className="px-4 py-4">{items.userId}</td>
+                  <td className="px-4 py-4">{new Date(items.orderDate).toLocaleString()}</td>
                 </tr>
               )
             })}

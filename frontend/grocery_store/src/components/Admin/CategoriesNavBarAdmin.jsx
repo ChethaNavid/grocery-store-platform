@@ -19,6 +19,7 @@ const CategoriesNavbar = ({ onSearch, handleClearSearch, handleAdd, addButtonLab
 
   const showAddButton = currentPath === "/admin/products";
   const showFilter = currentPath === "/admin/products";
+  const showSearch = currentPath === "/admin/products";
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
@@ -65,36 +66,38 @@ const CategoriesNavbar = ({ onSearch, handleClearSearch, handleAdd, addButtonLab
         )}
       </div>
 
-      <nav className="flex items-center justify-between gap-4 bg-white p-4 border-b border-gray-200">
-        <div className="flex-grow">
-          <SearchBarAdmin value={searchQuery}
-            onChange={({target}) => {
-              setSearchQuery(target.value);
-            }}
-            handleSearch={handleSearch}
-            onClearSearch={onClearSearch}
-          />
-        </div>
-
-        {showFilter && (
-          <div className="flex items-center gap-4">
-            <select
-              onChange={handleCategoryChange}
-              value={selectedCategory}
-              className="text-sm font-medium border bg-[#fcfbfb] rounded-lg p-1 w-full max-w-xs px-4 py-2 border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-            >
-                <option value="">All</option>
-                <option value="fruits">Fruits</option>
-                <option value="vegetables">Vegetables</option>
-                <option value="dairy">Dairy</option>
-                <option value="meat">Meat</option>
-                <option value="bakery">Bakery</option>
-                <option value="beverages">Beverages</option>
-                <option value="snacks">Snacks</option>
-            </select>
+      {showSearch && (
+        <nav className="flex items-center justify-between gap-4 bg-white p-4 border-b border-gray-200">
+          <div className="flex-grow">
+            <SearchBarAdmin value={searchQuery}
+              onChange={({target}) => {
+                setSearchQuery(target.value);
+              }}
+              handleSearch={handleSearch}
+              onClearSearch={onClearSearch}
+            />
           </div>
-        )}
-      </nav>
+
+          {showFilter && (
+            <div className="flex items-center gap-4">
+              <select
+                onChange={handleCategoryChange}
+                value={selectedCategory}
+                className="text-sm font-medium border bg-[#fcfbfb] rounded-lg p-1 w-full max-w-xs px-4 py-2 border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+              >
+                  <option value="">All</option>
+                  <option value="fruits">Fruits</option>
+                  <option value="vegetables">Vegetables</option>
+                  <option value="dairy">Dairy</option>
+                  <option value="meat">Meat</option>
+                  <option value="bakery">Bakery</option>
+                  <option value="beverages">Beverages</option>
+                  <option value="snacks">Snacks</option>
+              </select>
+            </div>
+          )}
+        </nav>
+      )}
     </>
   );
 };
