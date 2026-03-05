@@ -91,6 +91,8 @@ const CategoryPage = () => {
               category={items.Category?.name}
               productName={items.name}
               price={`$${items.price}`}
+              inStock={items.inStock}
+              quantity={items.quantity}
               handleAddButton={() => {handleAddButton(items)}}
             />
           )

@@ -1,18 +1,32 @@
 import React from 'react'
 
-const ProductCard = ({ imgURL, inStock, category, productName, price, handleAddButton }) => {
+const ProductCard = ({ imgURL, inStock, category, productName, price, quantity, handleAddButton }) => {
   return (
     
     <div className='w-[280px] border border-[#ccc] rounded-lg overflow-hidden transition-all duration-300 ease-in-out hover:shadow-[0_20px_25px_rgba(0,0,0,0.15)] flex-shrink-0'>
-        <div className='h-[200px] overflow-hidden'>
+        <div className='h-[200px] overflow-hidden relative'>
           <img src={imgURL} alt={productName} className='w-full h-full object-cover block'></img>
+          {!inStock && (
+            <div className='absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
+              <span className='text-white font-bold text-lg'>Out of Stock</span>
+            </div>
+          )}
       </div>
         <div className=''>
             <p className='text-sm text-primary mb-1 ml-4'>{category}</p>
             <p className='text-sm font-semibold ml-4'>{productName}</p>
+            {quantity !== undefined && quantity <= 5 && quantity > 0 && (
+              <p className='text-xs text-orange-600 ml-4 mt-1'>Only {quantity} left in stock!</p>
+            )}
             <div className='flex justify-between items-center mx-4 my-2.5'>
                 <p className='text-lg font-semibold'>{price}</p>
-                <button className='primary-btn text-sm' onClick={handleAddButton}>Add</button>
+                <button 
+                  className={`primary-btn text-sm ${!inStock ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                  onClick={handleAddButton}
+                  disabled={!inStock}
+                >
+                  {inStock ? 'Add' : 'Out of Stock'}
+                </button>
             </div>
         </div>
     </div>

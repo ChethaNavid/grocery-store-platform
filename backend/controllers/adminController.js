@@ -161,6 +161,7 @@ const addProduct = async (req, res) => {
       price,
       imageName: file.originalname,
       categoryId: category.id,
+      inStock: parseInt(quantity) > 0,
       include: { model: Category, attributes: ["name"] },
     });
 
@@ -234,24 +235,26 @@ const editProduct = async (req, res) => {
         where: { name: categoryName },
       });
       if (!category) {
-        return res
-          .status(404)
-          .json({
-            error: true,
-            message: `Category '${categoryName}' not found.`,
-          });
+        return res.status(404).json({
+          error: true,
+          message: `Category '${categoryName}' not found.`,
+        });
       }
       categoryId = category.id;
     }
 
+    const updatedQuantity =
+      quantity !== undefined ? parseInt(quantity) : existingProduct.quantity;
+
     await Product.update(
       {
         name: name || existingProduct.name,
-        quantity: quantity || existingProduct.quantity,
+        quantity: updatedQuantity,
         description: description || existingProduct.description,
         price: price || existingProduct.price,
         imageName: newImageName,
         categoryId: categoryId,
+        inStock: updatedQuantity > 0,
       },
       { where: { id } },
     );

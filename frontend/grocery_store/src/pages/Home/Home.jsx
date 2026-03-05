@@ -123,6 +123,8 @@ const Home = () => {
                 category={items.Category?.name}
                 productName={items.name}
                 price={`$${items.price}`}
+                inStock={items.inStock}
+                quantity={items.quantity}
                 handleAddButton={() => handleAddButton(items)}
               />
             )
@@ -137,12 +139,14 @@ const Home = () => {
           {popularProduct.map((items) => {
             return (
               <ProductCard
-                key={items.id} 
+                key={items.id}
                 imgURL={items.imageUrl}
                 category={items.Category?.name}
                 productName={items.name}
                 price={`$${items.price}`}
-                handleAddButton={() => {handleAddButton(items)}}
+                inStock={items.inStock}
+                quantity={items.quantity}
+                handleAddButton={() => handleAddButton(items)}
               />
             )
           })}

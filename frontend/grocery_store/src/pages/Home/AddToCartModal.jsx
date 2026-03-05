@@ -4,6 +4,17 @@ import { MdClose } from 'react-icons/md'
 export default function AddToCartModal({ product, onClose, onAdd }) {
   const [qty, setQty] = useState(1)
   const subtotal = (product.price * qty).toFixed(2)
+  const maxStock = product.quantity || 0
+
+  const handleIncrement = () => {
+    if (qty < maxStock) {
+      setQty(q => q + 1)
+    }
+  }
+
+  const handleDecrement = () => {
+    setQty(q => Math.max(1, q - 1))
+  }
 
   return (
     // Backdrop
@@ -31,21 +42,29 @@ export default function AddToCartModal({ product, onClose, onAdd }) {
             <h3 className="font-semibold">{product.name}</h3>
             <p className="text-xs text-gray-500">{product.description}</p>
             <p className="mt-2 text-xl font-semibold">${product.price.toFixed(2)}</p>
+            {maxStock > 0 && maxStock <= 10 && (
+              <p className="text-xs text-orange-600 mt-1">Only {maxStock} left in stock!</p>
+            )}
+            {maxStock === 0 && (
+              <p className="text-xs text-red-600 mt-1">Out of stock</p>
+            )}
           </div>
         </div>
 
         {/* Quantity Selector */}
         <div className="mb-4">
-          <label className="block text-sm mb-1">Quantity</label>
+          <label className="block text-sm mb-1">Quantity (Available: {maxStock})</label>
           <div className="inline-flex items-center space-x-2">
             <button
-              onClick={() => setQty(q => Math.max(1, q - 1))}
-              className="px-3 py-1 border rounded"
+              onClick={handleDecrement}
+              className="px-3 py-1 border rounded disabled:opacity-50"
+              disabled={qty <= 1}
             >–</button>
             <span className="w-8 text-center">{qty}</span>
             <button
-              onClick={() => setQty(q => q + 1)}
-              className="px-3 py-1 border rounded"
+              onClick={handleIncrement}
+              className="px-3 py-1 border rounded disabled:opacity-50"
+              disabled={qty >= maxStock}
             >+</button>
           </div>
         </div>

@@ -72,6 +72,8 @@ const SearchResult = () => {
                 category={item.Category?.name}
                 productName={item.name}
                 price={`$${item.price}`}
+                inStock={item.inStock}
+                quantity={item.quantity}
                 handleAddButton={() => handleAddButton(item)}
               />
             ))}
